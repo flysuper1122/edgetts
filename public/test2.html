@@ -18,7 +18,7 @@
       margin: 10px 0 5px;
     }
     select, input[type="range"] {
-      width: 100%;
+      width: 50%;
       padding: 10px;
       margin-bottom: 20px;
     }
@@ -181,11 +181,11 @@ input[type=range]::-moz-range-thumb {
       <option value="en-US-JasonNeural">Jason (男性)</option>
       <option value="en-US-NancyNeural">Nancy (女性)</option>
       <option value="en-US-TonyNeural">Tony (男性)</option>
-    </select>
-
-    <!-- 語速調整 -->
+    </select><!-- 語速調整 -->
     <label for="speakSpeed">語速：<span id="speedValue">0%</span></label>
     <input type="range" id="speakSpeed"name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)" >
+
+    
     <!-- 音頻播放器 -->
     <audio id="audioPlayer" controls></audio>
   </div>
