@@ -654,11 +654,21 @@ selectAllTextButton.addEventListener('click', function() {
 });
 
 function cancelReading() {
-    isReading = false;
-    selectAllTextButton.textContent = "整頁朗讀";
-    selectAllTextButton.classList.remove('button-danger');
-    selectAllTextButton.classList.add('button-light');
-    clearHighlights();
+  isReading = false;
+  audioPlayer.pause();
+  audioPlayer.currentTime = 0;
+  selectAllTextButton.textContent = "整頁朗讀";
+  selectAllTextButton.classList.remove('button-danger');
+  selectAllTextButton.classList.add('button-light');
+  
+  // 清除所有標示
+  const textLayerDivs = document.querySelectorAll('#viewerContainer .textLayer my-fra');
+  textLayerDivs.forEach(span => {
+    span.style.backgroundColor = ''; // 清除標示
+  });
+
+  // 清除事件監聽器
+  audioPlayer.onended = null;
 }
 
 function startReading() {
