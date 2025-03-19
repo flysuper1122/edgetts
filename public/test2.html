@@ -28,8 +28,13 @@
       cursor: pointer;
     }
     audio {
-      width: 100%;
-      margin-top: 20px;
+      width: 30%;     
+     z-index: 1000;
+    position: fixed; 
+    bottom: 5px; 
+   left: 47%; 
+    z-index: 1000;
+	    
     }
         .pdf-page-container {
             margin-bottom: 20px;
@@ -183,7 +188,7 @@ input[type=range]::-moz-range-thumb {
     <label for="speakSpeed">語速：<span id="speedValue">0%</span></label>
     <input type="range" id="speakSpeed"name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)" >
     <!-- 音頻播放器 -->
-    <audio id="audioPlayer" controls style="position: fixed; bottom: 5px; left: 47%; z-index: 1000;"></audio>
+    <audio id="audioPlayer"></audio>
   </div>
 <div id="movable-frame"></div>
 <input type="file" id="pdfFileInput">
