@@ -1,1 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>語音播放範例</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    audio {
+      width: 100%;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>語音播放範例</h1>
+    <p>點擊按鈕播放固定語音：</p>
+    <button id="playButton">播放語音</button>
+    <audio id="audioPlayer" controls></audio>
+  </div>
 
+  <script>
+    // 固定的語音內容
+    const fixedText = "這是一個語音播放的範例，歡迎使用此功能。";
+
+    // 固定的語音配置
+    const voiceName = "zh-CN-XiaoxiaoNeural"; // 預設聲音
+    const voiceFormat = "audio-24khz-96kbitrate-mono-mp3"; // 預設音頻格式
+
+    // 生成 SSML
+    function createSSML(text, voiceName) {
+      return `
+        <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="zh-CN">
+          <voice name="${voiceName}">
+            <prosody rate="0%">
+              ${text}
+            </prosody>
+          </voice>
+        </speak>
+      `;
+    }
+
+    // 播放語音
+    async function playAudio() {
+      const button = document.getElementById('playButton');
+      const audioPlayer = document.getElementById('audioPlayer');
+
+      button.disabled = true; // 禁用按鈕防止重複點擊
+      button.textContent = '生成中...';
+
+      try {
+        // 生成 SSML
+        const ssml = createSSML(fixedText, voiceName);
+
+        // 發送請求到 TTS API
+        const response = await fetch('/api/ra', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            'Format': voiceFormat,
+          },
+          body: ssml,
+        });
+
+        if (!response.ok) {
+          throw new Error(`請求失敗：${response.statusText}`);
+        }
+
+        // 將音頻數據轉換為 Blob 並設置為 audio 標籤的來源
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioPlayer.src = audioUrl;
+        audioPlayer.play(); // 自動播放
+      } catch (error) {
+        console.error('發生錯誤：', error);
+        alert('無法播放語音，請檢查網絡連接或稍後重試。');
+      } finally {
+        button.disabled = false;
+        button.textContent = '播放語音';
+      }
+    }
+
+    // 綁定按鈕點擊事件
+    document.getElementById('playButton').addEventListener('click', playAudio);
+  </script>
+</body>
+</html>
