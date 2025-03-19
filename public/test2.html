@@ -220,7 +220,7 @@ input[type=range]::-moz-range-thumb {
 <div style=" writing-mode: vertical-rl; text-orientation: upright; height:400px; width:50px;z-index: 1000; position: fixed; right:0%; top:40px; transform: translateY(20%);">
   <span  style=" position: fixed;top:0px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">語速調整</span>
     <label for="speakSpeed" style="font-weight: bold; color: rgb(134, 101, 224);  position: fixed;right:3px;top:90px;font-size: 20px; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">      
-    <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="30" oninput="updateRate(this.value)" style="font-size: 20px;left:30%;width: 20px; height: 150px;">     
+    <input type="range" id="speakSpeed" name="rate" min="50" max="+50" value="30" oninput="updateRate(this.value)" style="font-size: 20px;left:30%;width: 20px; height: 150px;">     
 	</label>
     <span id="speedValue" style=" position: fixed;right:0%;top:250px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">減30%</span>   
 </div>
