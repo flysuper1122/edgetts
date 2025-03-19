@@ -1274,22 +1274,9 @@ function showPage(page_no) {
 }
 
 
- let selectedVoice = '1'; // 預設語音
 
-        function selectVoice(checkbox) {
-            const chineseCheckbox = document.getElementById('chinese');
-            const englishCheckbox = document.getElementById('english');
 
-            if (checkbox.id === 'chinese') {
-                englishCheckbox.checked = !checkbox.checked;
-            } else {
-                chineseCheckbox.checked = !checkbox.checked;
-            }
-
-            selectedVoice = checkbox.checked ? checkbox.value : (checkbox.id === 'chinese' ? englishCheckbox.value : chineseCheckbox.value);
-        }
-
-     let selectedRate = '30%'; // 預設語音
+     let selectedRate = '-30%'; // 預設語音
 
     function updateRate(value) {
         let adjustedValue = value;
