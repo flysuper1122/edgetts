@@ -702,27 +702,26 @@ nextPageButton.addEventListener('click', () => {
     let isFinding = false; // 用於追蹤是否有未完成的查找操作
 
     // 函數: 發送選中的文本到新的 TTS API 進行處理
- function sendTextToTTS(selectedText, callback) {
-    console.log("送出給 TTS 的文本:", selectedText);
-const fixedText = selectedText;
- 
-    // 延遲發音
+ // 獲取選擇的聲音和語速
+    const voiceName = document.getElementById("voiceSelect").value;
+    const ratePercent = parseFloat(document.getElementById("speakSpeed").value);
+
+    // 使用本地瀏覽器發音
     setTimeout(() => {
-      audioPlayer.play(); // 自動播放
+        speakText(selectedText, voiceName, ratePercent, callback);
     }, 100); // 延遲 100 毫秒
 }
       
 function sendAllTextToTTS(selectedText, callback) {
     console.log("送出給 TTS 的文本:", selectedText);
 
-    // 使用本地瀏覽器發音
-    const voiceName = selectedVoice;
-    const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
-    const ratePercent = parseFloat(selectedRate); // 使用百分比
+    // 獲取選擇的聲音和語速
+    const voiceName = document.getElementById("voiceSelect").value;
+    const ratePercent = parseFloat(document.getElementById("speakSpeed").value);
 
-    // 延遲發音
+    // 使用本地瀏覽器發音
     setTimeout(() => {
-        speakText(selectedText, voiceName, voiceLang, ratePercent, callback);
+        speakText(selectedText, voiceName, ratePercent, callback);
     }, 100); // 延遲 100 毫秒
 }
 const toggleButton = document.getElementById('toggle-button');
@@ -738,7 +737,7 @@ toggleButton.addEventListener('click', function() {
     }
 });
 
-function speakText(text, voiceName, voiceLang, ratePercent, onEndCallback) {
+function speakText(text, voiceName, ratePercent, onEndCallback) {
     const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
 
@@ -748,19 +747,16 @@ function speakText(text, voiceName, voiceLang, ratePercent, onEndCallback) {
 
     // 設定語音
     const voices = synth.getVoices();
-    //const selectedVoice = voices.find(voice => voice.name === voiceName && voice.lang === voiceLang);
-    const selectedVoice = document.getElementById("voiceSelect").selectedOptions[0].getAttribute("data-name");
+    const selectedVoice = voices.find(voice => voice.name === voiceName);
     if (selectedVoice) {
-        utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === selectedVoice);
+        utterance.voice = selectedVoice;
     }
 
     // 設置朗讀完成後的回調
     utterance.onend = onEndCallback;
 
-            
-            
-            speechSynthesis.speak(utterance);
-   
+    // 開始朗讀
+    synth.speak(utterance);
 }
 
 // 確保語音列表已加載
