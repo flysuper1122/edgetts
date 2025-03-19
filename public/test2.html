@@ -856,28 +856,38 @@ readButton.id = 'read-button';
 readButton.textContent = '框選朗讀';
 document.body.appendChild(readButton);
 
+function initializeFramePosition() {
+  const frame = document.getElementById('movable-frame');
+  frame.style.top = `${frame.offsetTop - 200}px`; // 向上移動 200px
+}
+
+// 更新按鈕位置
 function updateButtonPositions() {
+  const frame = document.getElementById('movable-frame');
+
   document.getElementById('resize-bottom').style.top = `${frame.offsetTop + frame.offsetHeight}px`;
   document.getElementById('resize-bottom').style.left = `${frame.offsetLeft + frame.offsetWidth / 2 - 40}px`; // Adjusted for new width
   document.getElementById('resize-right').style.top = `${frame.offsetTop + frame.offsetHeight / 2 - 40}px`; // Adjusted for new height
   document.getElementById('resize-right').style.left = `${frame.offsetLeft + frame.offsetWidth}px`;
-  document.getElementById('read-button').style.top = `${frame.offsetTop-40}px`; // Position above the frame
+  document.getElementById('read-button').style.top = `${frame.offsetTop - 40}px`; // Position above the frame
   document.getElementById('read-button').style.left = `${frame.offsetLeft + frame.offsetWidth / 2 - 45}px`; // Centered above the frame
-// Add text to the buttons
-document.getElementById('resize-bottom').textContent = '↕';
-document.getElementById('resize-right').textContent = '↔';
-// Add images to the buttons
-  //document.getElementById('resize-bottom').innerHTML = '<img src="images/updown.png">';
-  //document.getElementById('resize-right').innerHTML = '<img src="images/rightleft.png">';
+
+  // Add text to the buttons
+  document.getElementById('resize-bottom').textContent = '↕';
+  document.getElementById('resize-right').textContent = '↔';
+
   // Center the text within the buttons
-    document.getElementById('resize-bottom').style.display = 'flex';
-    document.getElementById('resize-bottom').style.alignItems = 'center';
-    document.getElementById('resize-bottom').style.justifyContent = 'center';
-    
-    document.getElementById('resize-right').style.display = 'flex';
-    document.getElementById('resize-right').style.alignItems = 'center';
-    document.getElementById('resize-right').style.justifyContent = 'center';
+  document.getElementById('resize-bottom').style.display = 'flex';
+  document.getElementById('resize-bottom').style.alignItems = 'center';
+  document.getElementById('resize-bottom').style.justifyContent = 'center';
+  
+  document.getElementById('resize-right').style.display = 'flex';
+  document.getElementById('resize-right').style.alignItems = 'center';
+  document.getElementById('resize-right').style.justifyContent = 'center';
 }
+
+// 初始化框的位置
+initializeFramePosition();
 
 frame.addEventListener('mousedown', (e) => {
   if (e.target.classList.contains('resize-button') || e.target.id === 'read-button') return;
