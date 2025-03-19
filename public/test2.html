@@ -221,49 +221,6 @@ input[type=range]::-moz-range-thumb {
 
 
 <script>
-let startY = 0; // 滑動起始點的 Y 座標
-let isAtTop = true; // 是否處於頁面頂部
-let minY = 0; // 滑動過程中的最小 Y 座標（用於檢測整體軌跡）
-
-// 監聽 touchstart 事件，記錄起始點
-document.addEventListener('touchstart', (e) => {
-    startY = e.touches[0].clientY; // 記錄起始點的 Y 座標
-    isAtTop = window.scrollY === 0; // 檢查是否處於頁面頂部
-    minY = startY; // 初始化最小 Y 座標
-});
-
-// 監聽 touchmove 事件，控制滑動行為
-document.addEventListener('touchmove', (e) => {
-    const currentY = e.touches[0].clientY; // 當前觸碰點的 Y 座標
-    const deltaY = currentY - startY; // 計算滑動距離
-
-    // 更新最小 Y 座標
-    if (currentY < minY) {
-        minY = currentY;
-    }
-
-    // 如果處於頁面頂部且整體軌跡是向下滑動，則阻止預設行為（禁用下拉刷新）
-    if (isAtTop && currentY - minY > 50) { // 整體軌跡向下超過 50px
-        e.preventDefault();
-    }
-}, { passive: false });
-
-// 監聽 touchend 事件，處理滑動翻頁
-document.addEventListener('touchend', (e) => {
-    const endY = e.changedTouches[0].clientY; // 結束點的 Y 座標
-    const deltaY = endY - startY; // 計算滑動距離
-
-    // 如果滑動距離超過閾值，則觸發翻頁
-    if (Math.abs(deltaY) > 50) { // 閾值設為 50px
-        if (deltaY > 0) {
-            // 向下滑動，切換到上一頁
-            prevPageButton.click();
-        } else {
-            // 向上滑動，切換到下一頁
-            nextPageButton.click();
-        }
-    }
-});
 
 
 
