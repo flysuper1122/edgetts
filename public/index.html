@@ -25,22 +25,22 @@
     <form>
       <div class="row">
         <div class="col">
-          <label for="name" class="form-label">配置名称：</label>
-          <input name="name" type="text" class="form-control" value="大声朗读" />
-          <div class="form-text">在阅读APP中显示的名称。</div>
+          <label for="name" class="form-label">配置名稱：</label>
+          <input name="name" type="text" class="form-control" value="大聲朗讀" />
+          <div class="form-text">在閱讀APP中顯示的名稱。</div>
         </div>
       </div>
       <div class="row">
         <div class="col">
-          <label for="voiceName" class="form-label">声音：</label>
+          <label for="voiceName" class="form-label">聲音：</label>
           <select name="voiceName" class="form-select" onchange="updateConfigName()">
           </select>
-          <div class="form-text">声音列表加载可能有点慢，请耐心等待！</div>
+          <div class="form-text">聲音列表加載可能有點慢，請耐心等待！</div>
         </div>
       </div>
       <div class="row">
         <div class="col">
-          <label for="voiceFormat" class="form-label">音频格式：</label>
+          <label for="voiceFormat" class="form-label">音頻格式：</label>
           <select name="voiceFormat" class="form-select">
             <option value="raw-16khz-16bit-mono-pcm">raw-16khz-16bit-mono-pcm</option>
             <option value="raw-48khz-16bit-mono-pcm">raw-48khz-16bit-mono-pcm</option>
@@ -68,42 +68,47 @@
             <option value="ogg-48khz-16bit-mono-opus">ogg-48khz-16bit-mono-opus</option>
           </select>
           <div class="form-text">
-            <p>可以调整音频的格式和质量。质量越高，生成的文件越大，对网速和流量的需求越高。请根据自己的情况选择。</p>
-            <p>如果出现 “Unsupported output format: XXX” 错误，表示不支持当前格式。</p>
+            <p>可以調整音頻的格式和質量。質量越高，生成的文件越大，對網速和流量的需求越高。請根據自己的情況選擇。</p>
+            <p>如果出現 “Unsupported output format: XXX” 錯誤，表示不支持當前格式。</p>
           </div>
         </div>
-
-        <div class="row">
-          <div>
-            <label for="token" class="form-label">凭据（TOKEN）：</label>
-            <input name="token" class="form-control" type="text" value="">
-            <div class="form-text">如果没有设置 TOKEN 环境变量请留空。</div>
-          </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <label for="speakSpeed" class="form-label">語速：</label>
+          <input type="range" class="form-range" min="-50" max="50" value="0" id="speakSpeed" name="speakSpeed">
+          <div class="form-text">調整語速，範圍從 -50% 到 +50%</div>
         </div>
-
-        <div class="row">
-          <div class="col">
-            <label for="previewText" class="form-label">测试文本：</label>
-            <textarea name="previewText" class="form-control" rows="3" cols="">如果喜欢这个项目的话请点个 Star 吧。</textarea>
-          </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="token" class="form-label">憑證（TOKEN）：</label>
+          <input name="token" class="form-control" type="text" value="">
+          <div class="form-text">如果沒有設置 TOKEN 環境變量請留空。</div>
         </div>
-        <div style="height:20px"></div>
-        <div class="row">
-          <div class="col">
-            <button id="previewButton" type="button" class="btn btn-secondary" onclick="preview()">测试</button>
-            <button type="button" class="btn btn-primary" onclick='createLegadoUrl()'>生成阅读（legado）语音引擎链接</button>
-          </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <label for="previewText" class="form-label">測試文本：</label>
+          <textarea name="previewText" class="form-control" rows="3" cols="">如果喜歡這個項目的話請點個 Star 吧。</textarea>
         </div>
+      </div>
+      <div style="height:20px"></div>
+      <div class="row">
+        <div class="col">
+          <button id="previewButton" type="button" class="btn btn-secondary" onclick="preview()">測試</button>
+          <button type="button" class="btn btn-primary" onclick='createLegadoUrl()'>生成閱讀（legado）語音引擎鏈接</button>
+        </div>
+      </div>
     </form>
     <div style="height:50px"></div>
   </div>
-
 
   <div id="legadoUrlModal" class="modal " tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">阅读链接</h5>
+          <h5 class="modal-title">閱讀鏈接</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -113,7 +118,7 @@
             <textarea id="legadoUrl" class="form-control" readonly rows="3" cols="2" value></textarea>
           </div>
           <div class="row" style="margin-top: 10px;">
-            <a id="legadoImportButton" class="btn btn-primary" href="">一键导入到阅读</a>
+            <a id="legadoImportButton" class="btn btn-primary" href="">一鍵導入到閱讀</a>
           </div>
         </div>
       </div>
@@ -158,15 +163,15 @@
 
     function updateConfigName() {
       let voice = document.getElementsByName('voiceName')[0].value;
-      document.getElementsByName('name')[0].value = '大声朗读（' + voice + '）';
+      document.getElementsByName('name')[0].value = '大聲朗讀（' + voice + '）';
     }
 
-    function createSSML(text, voiceName) {
+    function createSSML(text, voiceName, speakSpeed) {
       text = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('\'', '&apos;').replaceAll('"', '&quot;');
       let ssml = '\
         <speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="en-US">\
           <voice name="'+ voiceName + '">\
-              <prosody rate="0%" pitch="0%">\
+              <prosody rate="' + speakSpeed + '%">\
                   '+ text + '\
               </prosody >\
           </voice >\
@@ -181,7 +186,8 @@
       let voiceFormat = document.getElementsByName('voiceFormat')[0].value;
       let token = document.getElementsByName('token')[0].value;
       let previewText = document.getElementsByName('previewText')[0].value;
-      let ssml = createSSML(previewText, voiceName)
+      let speakSpeed = document.getElementById('speakSpeed').value;
+      let ssml = createSSML(previewText, voiceName, speakSpeed)
       if (token) {
         headers['Authorization'] = 'Bearer ' + token;
       }
@@ -199,7 +205,7 @@
         if (response.status == 200) {
           return response.arrayBuffer()
         } else if (response.status == 401) {
-          throw '无效的密钥';
+          throw '無效的密鑰';
         } else {
           return response.text().then(text => Promise.reject(text));
         }
@@ -224,11 +230,13 @@
       let voiceFormat = document.getElementsByName('voiceFormat')[0].value;
       let token = document.getElementsByName('token')[0].value;
       let previewText = document.getElementsByName('previewText')[0].value;
+      let speakSpeed = document.getElementById('speakSpeed').value;
       let url = window.location.protocol + '//' + window.location.host + '/api/legado?api=' + encodeURIComponent(window.location.protocol + '//' + window.location.host + '/api/ra')
         + '&name=' + encodeURIComponent(name)
         + '&voiceName=' + encodeURIComponent(voiceName)
         + '&voiceFormat=' + encodeURIComponent(voiceFormat)
-        + '&token=' + encodeURIComponent(token);
+        + '&token=' + encodeURIComponent(token)
+        + '&speakSpeed=' + encodeURIComponent(speakSpeed);
       let svg = new QRCode(url).svg();
       let modal = new bootstrap.Modal(document.getElementById('legadoUrlModal'))
       modal.show();
