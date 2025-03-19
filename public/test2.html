@@ -158,7 +158,7 @@ input[type=range]::-moz-range-thumb {
     cursor: pointer;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
-	     #verticalDiv {
+   #verticalDiv {
             position: fixed;
             top: 50px; /* 距離頂部50px */
             right: 0; /* 距離右側0px */
@@ -166,6 +166,11 @@ input[type=range]::-moz-range-thumb {
             display: flex;
             flex-direction: column; /* 使內容縱向排列 */
             align-items: center; /* 內容置中 */
+        }
+
+        #speakSpeed {
+            transform: rotate(-90deg); /* 旋轉滑軌 */
+            transform-origin: right center; /* 設置旋轉中心 */
         }
     </style>
 </head>
