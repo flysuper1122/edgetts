@@ -555,8 +555,7 @@ nextPageButton.addEventListener('click', () => {
 
 </script>
  <script>
-       window.onload = function () {    
-
+  
   let selectedFile = null;  
   let isListening = true; // 初始設置為監聽模式
   let isReading = false; // 初始設置為未閱讀狀態
@@ -1220,18 +1219,17 @@ function showPage(page_no) {
 
 
 
-     let selectedRate = '-30%'; // 預設語音
+     // 更新語速顯示
+function updateRate(value) {
+    let adjustedValue = value;
+    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' : '減') + Math.abs(adjustedValue) + '%';
+    selectedRate = adjustedValue + '%';
+    document.getElementById('speedValue').innerText = displayValue;
+}
 
-    function updateRate(value) {
-        let adjustedValue = value;
-        let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' : '減') + Math.abs(adjustedValue) + '%';
-        selectedRate = adjustedValue + '%';
-        document.getElementById('speedValue').innerText = displayValue;
-    }
-
-    // Set initial position correctly
-    document.getElementById('speakSpeed').value = -30;
-
+// 設置初始語速
+document.getElementById('speakSpeed').value = -30;
+updateRate(-30);
         
 </script>
 </body>
