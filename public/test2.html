@@ -182,7 +182,7 @@ input[type=range]::-moz-range-thumb {
 
     <!-- 語速調整 -->
     <label for="speakSpeed">語速：<span id="speedValue">0%</span></label>
-    <input type="range" id="speakSpeed"name="rate" min="-50" max="50" value="30" oninput="updateRate(this.value)" >
+    <input type="range" id="speakSpeed"name="rate" min="-50" max="50" value="0" oninput="updateRate(this.value)" >
 
     <!-- 播放按鈕 -->
     <button id="playButton">播放語音</button>
@@ -1289,11 +1289,10 @@ function showPage(page_no) {
             selectedVoice = checkbox.checked ? checkbox.value : (checkbox.id === 'chinese' ? englishCheckbox.value : chineseCheckbox.value);
         }
 
-     let selectedRate = '-30%'; // 預設語音
+     let selectedRate = '30%'; // 預設語音
 
     function updateRate(value) {
-        // 反轉正負方向
-        let adjustedValue = -value;
+        let adjustedValue = value;
         let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' : '減') + Math.abs(adjustedValue) + '%';
         selectedRate = adjustedValue + '%';
         document.getElementById('speedValue').innerText = displayValue;
