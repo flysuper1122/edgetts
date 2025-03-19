@@ -663,7 +663,9 @@ function sendTextToTTS(selectedText, callback) {
         const audioPlayer = document.getElementById('audioPlayer');
         audioPlayer.src = audioUrl;
         audioPlayer.play(); // 自動播放
-        if (callback) callback();
+
+        // 設置音頻播放完成後的回調
+        audioPlayer.onended = callback;
     })
     .catch(error => {
         console.error('發生錯誤：', error);
