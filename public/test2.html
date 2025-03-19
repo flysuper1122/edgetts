@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <title>PDF.js 多頁範例</title>
     <style>
+	 body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    select, input[type="range"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    audio {
+      width: 100%;
+      margin-top: 20px;
+    }
         .pdf-page-container {
             margin-bottom: 20px;
         }
@@ -145,34 +172,37 @@ input[type=range]::-moz-range-thumb {
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+<!-- 聲音選擇 -->
+    <label for="voiceSelect">選擇聲音：</label>
+    <select id="voiceSelect">
+      <option value="zh-TW-HsiaoChenNeural">曉臻 (女性)</option>
+      <option value="zh-TW-YunJheNeural">允哲 (男性)</option>
+      <option value="zh-TW-HsiaoYuNeural">曉雨 (女性，兒童音)</option>
+      <option value="en-US-JennyNeural">Jenny (女性)</option>
+      <option value="en-US-GuyNeural">Guy (男性)</option>
+      <option value="en-US-AriaNeural">Aria (女性)</option>
+      <option value="en-US-DavisNeural">Davis (男性)</option>
+      <option value="en-US-JaneNeural">Jane (女性)</option>
+      <option value="en-US-JasonNeural">Jason (男性)</option>
+      <option value="en-US-NancyNeural">Nancy (女性)</option>
+      <option value="en-US-TonyNeural">Tony (男性)</option>
+    </select>
 
 <button id="toggle-button" style="position: fixed; width: 160px;height: 40px; bottom: 5px; left: 47%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">暫停</button>
     
-<button id="select-all-text" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;right: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" >整頁朗讀</button>
-<button id="sendButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;right: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">朗讀選取文字</button>
-<button id="clearButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;left: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">清除選取文字</button>
-<label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 120px;left: 0%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
-    <input type="checkbox" id="touchSelectCheckbox" style="writing-mode: vertical-rl; text-orientation: upright;">觸控選取</label>
-<div style=" position: fixed;  top: 30px; right:15px; z-index: 2000;">  
-聲音選擇<select id="voiceSelect">
-    <option value="zh-TW-HsiaoChenNeural">曉臻 (女性)</option>
-    <option value="zh-TW-YunJheNeural">允哲 (男性)</option>
-    <option value="zh-TW-HsiaoYuNeural">曉雨 (女性，兒童音)</option>
-    <option value="en-US-JennyNeural">Jenny (女性)</option>
-    <option value="en-US-GuyNeural">Guy (男性)</option>
-    <option value="en-US-AriaNeural">Aria (女性)</option>
-    <option value="en-US-DavisNeural">Davis (男性)</option>
-    <option value="en-US-JaneNeural">Jane (女性)</option>
-    <option value="en-US-JasonNeural">Jason (男性)</option>
-    <option value="en-US-NancyNeural">Nancy (女性)</option>
-    <option value="en-US-TonyNeural">Tony (男性)</option>
-</select>
-</div>    
-     
+  <button id="select-all-text" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;right: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" >整頁朗讀</button>
+  <!-- 页面遮罩 -->
+  <div id="modalOverlay" class="modal-overlay"></div>
+
+   <button id="sendButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;right: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">朗讀選取文字</button>
+  <button id="clearButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;left: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">清除選取文字</button>
+    <label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 120px;left: 0%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
+        <input type="checkbox" id="touchSelectCheckbox" style="writing-mode: vertical-rl; text-orientation: upright;">觸控選取</label>
+   
 <div style=" writing-mode: vertical-rl; text-orientation: upright; height:400px; width:50px;z-index: 1000; position: fixed; right:0%; top:40px; transform: translateY(20%);">
   <span  style=" position: fixed;top:0px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">語速調整</span>
-    <label for="rateSlider" style="font-weight: bold; color: rgb(134, 101, 224);  position: fixed;right:3px;top:90px;font-size: 20px; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">      
-    <input type="range" id="rateSlider" name="rate" min="-50" max="50" value="30" oninput="updateRate(this.value)" style="font-size: 20px;left:30%;width: 20px; height: 150px;">     
+    <label for="speakSpeed" style="font-weight: bold; color: rgb(134, 101, 224);  position: fixed;right:3px;top:90px;font-size: 20px; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">      
+    <input type="range" "speakSpeed" name="rate" min="-50" max="50" value="30" oninput="updateRate(this.value)" style="font-size: 20px;left:30%;width: 20px; height: 150px;">     
 	</label>
     <span id="rateValue" style=" position: fixed;right:0%;top:250px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">減30%</span>   
 </div>
@@ -180,6 +210,78 @@ input[type=range]::-moz-range-thumb {
 
 
 <script>
+
+  // 預設音頻格式
+    const voiceFormat = "audio-24khz-96kbitrate-mono-mp3";
+
+    // 生成 SSML
+    function createSSML(text, voiceName, speakSpeed) {
+      return `
+        <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="zh-CN">
+          <voice name="${voiceName}">
+            <prosody rate="${speakSpeed}%">
+              ${text}
+            </prosody>
+          </voice>
+        </speak>
+      `;
+    }
+
+    // 更新語速顯示
+    document.getElementById('speakSpeed').addEventListener('input', function () {
+      document.getElementById('speedValue').textContent = `${this.value}%`;
+    });
+
+    // 播放語音
+    async function playAudio() {
+      const button = document.getElementById('playButton');
+      const audioPlayer = document.getElementById('audioPlayer');
+
+      button.disabled = true; // 禁用按鈕防止重複點擊
+      button.textContent = '生成中...';
+
+      try {
+        // 獲取選擇的聲音和語速
+        const voiceName = document.getElementById('voiceSelect').value;
+        const speakSpeed = document.getElementById('speakSpeed').value;
+
+        // 生成 SSML
+        const ssml = createSSML(fixedText, voiceName, speakSpeed);
+
+        // 發送請求到 TTS API
+        const response = await fetch('/api/ra', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            'Format': voiceFormat,
+          },
+          body: ssml,
+        });
+
+        if (!response.ok) {
+          throw new Error(`請求失敗：${response.statusText}`);
+        }
+
+        // 將音頻數據轉換為 Blob 並設置為 audio 標籤的來源
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioPlayer.src = audioUrl;
+        audioPlayer.play(); // 自動播放
+      } catch (error) {
+        console.error('發生錯誤：', error);
+        alert('無法播放語音，請檢查網絡連接或稍後重試。');
+      } finally {
+        button.disabled = false;
+        button.textContent = '播放語音';
+      }
+    }
+
+    // 綁定按鈕點擊事件
+    document.getElementById('playButton').addEventListener('click', playAudio);
+
+
+
+	
 let startY = 0; // 滑動起始點的 Y 座標
 let isAtTop = true; // 是否處於頁面頂部
 let minY = 0; // 滑動過程中的最小 Y 座標（用於檢測整體軌跡）
@@ -585,29 +687,28 @@ nextPageButton.addEventListener('click', () => {
     let isFinding = false; // 用於追蹤是否有未完成的查找操作
 
     // 函數: 發送選中的文本到新的 TTS API 進行處理
-function sendTextToTTS(selectedText, callback) {
+ function sendTextToTTS(selectedText, callback) {
     console.log("送出給 TTS 的文本:", selectedText);
 
-    // 獲取選擇的聲音和語速
-    const voiceName = document.getElementById("voiceSelect").value;
-    const ratePercent = parseFloat(document.getElementById("rateSlider").value);
+ const fixedText = selectedText ;
 
-    // 使用本地瀏覽器發音
+    // 延遲發音
     setTimeout(() => {
-        speakText(selectedText, voiceName, ratePercent, callback);
+        playAudio() ;
     }, 100); // 延遲 100 毫秒
 }
       
 function sendAllTextToTTS(selectedText, callback) {
     console.log("送出給 TTS 的文本:", selectedText);
 
-    // 獲取選擇的聲音和語速
-    const voiceName = document.getElementById("voiceSelect").value;
-    const ratePercent = parseFloat(document.getElementById("rateSlider").value);
-
     // 使用本地瀏覽器發音
+    const voiceName = selectedVoice;
+    const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
+    const ratePercent = parseFloat(selectedRate); // 使用百分比
+
+    // 延遲發音
     setTimeout(() => {
-        speakText(selectedText, voiceName, ratePercent, callback);
+        speakText(selectedText, voiceName, voiceLang, ratePercent, callback);
     }, 100); // 延遲 100 毫秒
 }
 const toggleButton = document.getElementById('toggle-button');
@@ -623,28 +724,7 @@ toggleButton.addEventListener('click', function() {
     }
 });
 
-// 語音播放功能
-   function speakText(text, voiceName, ratePercent, onEndCallback) {
-    const synth = window.speechSynthesis;
-    const utterance = new SpeechSynthesisUtterance(text);
 
-    // 將百分比轉換為倍率
-    const rate = 1 + (ratePercent / 100);
-    utterance.rate = rate;
-
-    // 設定語音
-    const voices = synth.getVoices();
-    const selectedVoice = voices.find(voice => voice.name === voiceName);
-    if (selectedVoice) {
-        utterance.voice = selectedVoice;
-    }
-
-    // 設置朗讀完成後的回調
-    utterance.onend = onEndCallback;
-
-    // 開始朗讀
-    synth.speak(utterance);
-}
 
 // 確保語音列表已加載
 window.speechSynthesis.onvoiceschanged = function() {
@@ -956,32 +1036,55 @@ readButton.addEventListener('click', readTextInsideFrame);
 updateButtonPositions();
  
 
- // 框選朗讀
-    function readTextInsideFrame() {
-        const frameRect = document.getElementById('movable-frame').getBoundingClientRect();
-        const textLayers = document.getElementsByClassName('textLayer');
-        let textInsideFrame = '';
+function readTextInsideFrame() {
+window.speechSynthesis.cancel(); // 取消所有正在進行的朗讀
+  const frameRect = frame.getBoundingClientRect();
+  const viewerContainer = document.getElementById('viewerContainer');
+  const textLayerDivs = viewerContainer.getElementsByClassName('textLayer');
 
-        for (let textLayer of textLayers) {
-            const spans = textLayer.getElementsByTagName('span');
-            for (let span of spans) {
-                const spanRect = span.getBoundingClientRect();
-                if (
-                    spanRect.top >= frameRect.top &&
-                    spanRect.bottom <= frameRect.bottom &&
-                    spanRect.left >= frameRect.left &&
-                    spanRect.right <= frameRect.right
-                ) {
-                    textInsideFrame += span.textContent + ' ';
-                }
-            }
-        }
-
-        const cleanedText = textInsideFrame.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-        const voiceName = document.getElementById('voiceSelect').value;
-        const ratePercent = parseFloat(document.getElementById('rateSlider').value);
-        speakText(cleanedText, voiceName, ratePercent);
+  // Clear previous highlights
+  for (let textLayer of textLayerDivs) {
+    const spans = textLayer.getElementsByTagName('my-fra');
+    for (let span of spans) {
+      span.style.backgroundColor = ''; // Clear previous highlight
     }
+  }
+
+  let textInsideFrame = '';
+
+  for (let textLayer of textLayerDivs) {
+    const spans = textLayer.getElementsByTagName('my-fra');
+    for (let span of spans) {
+      const spanRect = span.getBoundingClientRect();
+      if (
+        spanRect.top >= frameRect.top &&
+        spanRect.bottom <= frameRect.bottom &&
+        spanRect.left >= frameRect.left &&
+        spanRect.right <= frameRect.right
+      ) {
+        span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)'; // More transparent yellow
+        textInsideFrame += span.textContent + '';
+      }
+    }
+  }
+ const cleanedText = textInsideFrame
+  .trim()
+  .replace(/[\r\n]+/g, ' ') // 將換行符替換為單個空格
+  .replace(/\s{2,}/g, ' ')  // 將連續的多個空白字符替換為單個空格
+  .trim();
+   
+  sendTextToTTS(cleanedText, function() {
+    // 框選朗讀結束後的回調
+    isReading = false;
+    selectAllTextButton.textContent = "整頁朗讀";
+    selectAllTextButton.classList.remove('button-danger');
+    selectAllTextButton.classList.add('button-light');
+  });
+  selectAllTextButton.textContent = "取消朗讀";
+  selectAllTextButton.classList.remove('button-light');
+  selectAllTextButton.classList.add('button-danger'); 
+  isReading = true;
+}
 
   let lastTouchElement = null;
 
@@ -1100,24 +1203,7 @@ document.addEventListener('mouseup', () => {
         });
         wrapTextInFraTags();
         
- // 整頁朗讀
-    document.getElementById('select-all-text').addEventListener('click', function() {
-        const pdfContainer = document.getElementById('pdfContainer');
-        const textLayers = pdfContainer.getElementsByClassName('textLayer');
-        let fullText = '';
-
-        for (let textLayer of textLayers) {
-            const spans = textLayer.getElementsByTagName('span');
-            for (let span of spans) {
-                fullText += span.textContent + ' ';
-            }
-        }
-
-        const cleanedText = fullText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-        const voiceName = document.getElementById('voiceSelect').value;
-        const ratePercent = parseFloat(document.getElementById('rateSlider').value);
-        speakText(cleanedText, voiceName, ratePercent);
-    });       
+        
 // 使用 MutationObserver 監聽 DOM 變化
 const observer = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
@@ -1126,32 +1212,7 @@ const observer = new MutationObserver((mutationsList, observer) => {
         }
     }
 });
- // 朗讀選取文字
-    document.getElementById('sendButton').addEventListener('click', function() {
-        const highlightedText = [];
-        const textLayers = document.getElementsByClassName('textLayer');
-        
-        for (let textLayer of textLayers) {
-            const spans = textLayer.getElementsByTagName('span');
-            for (let span of spans) {
-                if (span.style.backgroundColor === 'rgba(255, 0, 0, 0.2)') {
-                    highlightedText.push(span.textContent);
-                }
-            }
-        }
 
-        const cleanedText = highlightedText.join('').trim().replace(/[\r\n]+/g, '').replace(/\s+/g, ' ').trim();
-        const voiceName = document.getElementById('voiceSelect').value;
-        const ratePercent = parseFloat(document.getElementById('rateSlider').value);
-        speakText(cleanedText, voiceName, ratePercent);
-    });
-
-    // 語速調整
-    function updateRate(value) {
-        const adjustedValue = -value;
-        const displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' : '減') + Math.abs(adjustedValue) + '%';
-        document.getElementById('rateValue').innerText = displayValue;
-    }
 // 配置 MutationObserver 監聽的目標節點和選項
 const config = { childList: true, subtree: true };
 
