@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <title>PDF.js 多頁範例</title>
     <style>
+	     body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    select, input[type="range"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    audio {
+      width: 100%;
+      margin-top: 20px;
+    }
         .pdf-page-container {
             margin-bottom: 20px;
         }
@@ -133,6 +160,36 @@ input[type=range]::-moz-range-thumb {
     </style>
 </head>
 <body tabindex="0">
+	 <div class="container">
+    <h1>語音播放範例</h1>
+    <p>選擇聲音和語速，點擊按鈕播放固定語音：</p>
+
+    <!-- 聲音選擇 -->
+    <label for="voiceSelect">選擇聲音：</label>
+    <select id="voiceSelect">
+      <option value="zh-TW-HsiaoChenNeural">曉臻 (女性)</option>
+      <option value="zh-TW-YunJheNeural">允哲 (男性)</option>
+      <option value="zh-TW-HsiaoYuNeural">曉雨 (女性，兒童音)</option>
+      <option value="en-US-JennyNeural">Jenny (女性)</option>
+      <option value="en-US-GuyNeural">Guy (男性)</option>
+      <option value="en-US-AriaNeural">Aria (女性)</option>
+      <option value="en-US-DavisNeural">Davis (男性)</option>
+      <option value="en-US-JaneNeural">Jane (女性)</option>
+      <option value="en-US-JasonNeural">Jason (男性)</option>
+      <option value="en-US-NancyNeural">Nancy (女性)</option>
+      <option value="en-US-TonyNeural">Tony (男性)</option>
+    </select>
+
+    <!-- 語速調整 -->
+    <label for="speakSpeed">語速：<span id="speedValue">0%</span></label>
+    <input type="range" id="speakSpeed" min="-50" max="50" value="0">
+
+    <!-- 播放按鈕 -->
+    <button id="playButton">播放語音</button>
+
+    <!-- 音頻播放器 -->
+    <audio id="audioPlayer" controls></audio>
+  </div>
 <div id="movable-frame"></div>
 <input type="file" id="pdfFileInput">
 <div id="viewerContainer" tabindex="0">
@@ -162,10 +219,10 @@ input[type=range]::-moz-range-thumb {
      
 <div style=" writing-mode: vertical-rl; text-orientation: upright; height:400px; width:50px;z-index: 1000; position: fixed; right:0%; top:40px; transform: translateY(20%);">
   <span  style=" position: fixed;top:0px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">語速調整</span>
-    <label for="rateSlider" style="font-weight: bold; color: rgb(134, 101, 224);  position: fixed;right:3px;top:90px;font-size: 20px; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">      
-    <input type="range" id="rateSlider" name="rate" min="-50" max="50" value="30" oninput="updateRate(this.value)" style="font-size: 20px;left:30%;width: 20px; height: 150px;">     
+    <label for="speakSpeed" style="font-weight: bold; color: rgb(134, 101, 224);  position: fixed;right:3px;top:90px;font-size: 20px; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">      
+    <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="30" oninput="updateRate(this.value)" style="font-size: 20px;left:30%;width: 20px; height: 150px;">     
 	</label>
-    <span id="rateValue" style=" position: fixed;right:0%;top:250px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">減30%</span>   
+    <span id="speedValue" style=" position: fixed;right:0%;top:250px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">減30%</span>   
 </div>
 <button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換平板模式</button>
 
@@ -569,83 +626,62 @@ nextPageButton.addEventListener('click', () => {
   let isReading = false; // 初始設置為未閱讀狀態
   let audioPlayer = null;
   document.addEventListener('DOMContentLoaded', () => {
-    audioPlayer = document.getElementById('audio-player');
+    audioPlayer = document.getElementById('audioPlayer');
     
     const findInput = document.getElementById('findInput'); // 獲取輸入欄位
     const findEntireWord = document.getElementById('findEntireWord'); // 獲取 Whole Words 勾選框
     let isFinding = false; // 用於追蹤是否有未完成的查找操作
 
     // 函數: 發送選中的文本到新的 TTS API 進行處理
- function sendTextToTTS(selectedText, callback) {
+function sendTextToTTS(selectedText, callback) {
     console.log("送出給 TTS 的文本:", selectedText);
 
-    // 使用本地瀏覽器發音
-    const voiceName = selectedVoice;
-    const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
-    const ratePercent = parseFloat(selectedRate); // 使用百分比
+    // 獲取選擇的聲音和語速
+    const voiceName = document.getElementById("voiceSelect").value;
+    const ratePercent = parseFloat(document.getElementById('speakSpeed').value); // 使用百分比
 
-    // 延遲發音
-    setTimeout(() => {
-        speakText(selectedText, voiceName, voiceLang, ratePercent, callback);
-    }, 100); // 延遲 100 毫秒
-}
-      
-function sendAllTextToTTS(selectedText, callback) {
-    console.log("送出給 TTS 的文本:", selectedText);
+    // 生成 SSML
+    const ssml = createSSML(selectedText, voiceName, ratePercent);
 
-    // 使用本地瀏覽器發音
-    const voiceName = selectedVoice;
-    const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
-    const ratePercent = parseFloat(selectedRate); // 使用百分比
-
-    // 延遲發音
-    setTimeout(() => {
-        speakText(selectedText, voiceName, voiceLang, ratePercent, callback);
-    }, 100); // 延遲 100 毫秒
-}
-const toggleButton = document.getElementById('toggle-button');
-const cancelButton = document.getElementById('cancel-button');
-
-toggleButton.addEventListener('click', function() {
-    if (toggleButton.textContent === '暫停') {
-        window.speechSynthesis.pause();
-        toggleButton.textContent = '繼續';
-    } else {
-        window.speechSynthesis.resume();
-        toggleButton.textContent = '暫停';
-    }
-});
-
-function speakText(text, voiceName, voiceLang, ratePercent, onEndCallback) {
-    const synth = window.speechSynthesis;
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    // 將百分比轉換為倍率
-    const rate = 1 + (ratePercent / 100);
-    utterance.rate = rate;
-
-    // 設定語音
-    const voices = synth.getVoices();
-    //const selectedVoice = voices.find(voice => voice.name === voiceName && voice.lang === voiceLang);
-    const selectedVoice = document.getElementById("voiceSelect").selectedOptions[0].getAttribute("data-name");
-    if (selectedVoice) {
-        utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === selectedVoice);
-    }
-
-    // 設置朗讀完成後的回調
-    utterance.onend = onEndCallback;
-
-            
-            
-            speechSynthesis.speak(utterance);
-   
+    // 發送請求到 TTS API
+    fetch('/api/ra', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain',
+            'Format': 'audio-24khz-96kbitrate-mono-mp3',
+        },
+        body: ssml,
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`請求失敗：${response.statusText}`);
+        }
+        return response.blob();
+    })
+    .then(audioBlob => {
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.src = audioUrl;
+        audioPlayer.play(); // 自動播放
+        if (callback) callback();
+    })
+    .catch(error => {
+        console.error('發生錯誤：', error);
+        alert('無法播放語音，請檢查網絡連接或稍後重試。');
+    });
 }
 
-// 確保語音列表已加載
-window.speechSynthesis.onvoiceschanged = function() {
-    // 語音列表已加載，可以調用 speakText 函數
-};
-
+function createSSML(text, voiceName, ratePercent) {
+    return `
+        <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="zh-CN">
+          <voice name="${voiceName}">
+            <prosody rate="${ratePercent}%">
+              ${text}
+            </prosody>
+          </voice>
+        </speak>
+    `;
+}
 
 const selectAllTextButton = document.getElementById('select-all-text');
 let sentences = [];
@@ -659,7 +695,6 @@ selectAllTextButton.addEventListener('click', function() {
         cancelReading();
     } else {
         // 開始朗讀
-        window.speechSynthesis.cancel();
         const pdfContainer = document.getElementById('pdfContainer');
         const textLayers = pdfContainer.getElementsByClassName('textLayer');
         let fullText = '';
@@ -686,7 +721,6 @@ selectAllTextButton.addEventListener('click', function() {
 });
 
 function cancelReading() {
-    window.speechSynthesis.cancel(); // 取消所有正在進行的朗讀
     isReading = false;
     selectAllTextButton.textContent = "整頁朗讀";
     selectAllTextButton.classList.remove('button-danger');
@@ -790,7 +824,6 @@ function highlightCurrentSentence(sentence) {
         }
     }
 }
-
 // 可移動框的功能
 const frame = document.getElementById('movable-frame');
 let isDragging = false;
@@ -1269,11 +1302,11 @@ function showPage(page_no) {
         let adjustedValue = -value;
         let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' : '減') + Math.abs(adjustedValue) + '%';
         selectedRate = adjustedValue + '%';
-        document.getElementById('rateValue').innerText = displayValue;
+        document.getElementById('speedValue').innerText = displayValue;
     }
 
     // Set initial position correctly
-    document.getElementById('rateSlider').value = 30;
+    document.getElementById('speakSpeed').value = 30;
 
         
 </script>
