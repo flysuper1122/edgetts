@@ -161,8 +161,7 @@ input[type=range]::-moz-range-thumb {
 </head>
 <body tabindex="0">
 	 <div class="container">
-    <h1>語音播放範例</h1>
-    <p>選擇聲音和語速，點擊按鈕播放固定語音：</p>
+    <h1>語音報讀系統</h1>
 
     <!-- 聲音選擇 -->
     <label for="voiceSelect">選擇聲音：</label>
@@ -183,12 +182,8 @@ input[type=range]::-moz-range-thumb {
     <!-- 語速調整 -->
     <label for="speakSpeed">語速：<span id="speedValue">0%</span></label>
     <input type="range" id="speakSpeed"name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)" >
-
-    <!-- 播放按鈕 -->
-    <button id="playButton">播放語音</button>
-
     <!-- 音頻播放器 -->
-    <audio id="audioPlayer" controls></audio>
+    <audio id="audioPlayer" controls style="position: fixed; bottom: 5px; left: 47%; z-index: 1000;"></audio>
   </div>
 <div id="movable-frame"></div>
 <input type="file" id="pdfFileInput">
@@ -201,10 +196,7 @@ input[type=range]::-moz-range-thumb {
     <button id="nextPage">Next</button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-
-<button id="toggle-button" style="position: fixed; width: 160px;height: 40px; bottom: 5px; left: 47%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">暫停</button>
-    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>    
   <button id="select-all-text" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;right: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" >整頁朗讀</button>
   <!-- 页面遮罩 -->
   <div id="modalOverlay" class="modal-overlay"></div>
