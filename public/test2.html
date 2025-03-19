@@ -195,10 +195,10 @@ input[type=range]::-moz-range-thumb {
 <div id="viewerContainer" tabindex="0">
     <center><div id="pdfContainer"></div></center>
 </div>
-<div class="pagination">
-    <button id="prevPage">Previous</button>
+<div class="pagination" style="width: 50%; top: 20px; z-index: 1000; position: fixed; left: 50%;  transform: translateX(-50%);">
+    <button id="prevPage">上一頁</button>
     <span id="pageNumber"></span>
-    <button id="nextPage">Next</button>
+    <button id="nextPage">下一頁</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>    
