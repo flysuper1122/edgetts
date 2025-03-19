@@ -555,65 +555,9 @@ nextPageButton.addEventListener('click', () => {
 
 </script>
  <script>
-       window.onload = function () {
-            //取得瀏覽器支援的語音語調
-            function populateVoiceList() {
-                //判斷是否支援 speechSynthesis API
-                if (typeof speechSynthesis === "undefined") {
-                    return;
-                }
+       window.onload = function () {    
 
-                const voices = speechSynthesis.getVoices();
-                const voiceSelect = document.getElementById("voiceSelect");
-
-                // 先添加 zh-TW 語音選項
-                for (let i = 0; i < voices.length; i++) {
-                    if (voices[i].lang === "zh-TW") {
-                        const option = document.createElement("option");
-                        option.textContent = `中文 (${voices[i].name})`;
-
-                        if (voices[i].default) {
-                            option.textContent += " — DEFAULT";
-                        }
-
-                        option.setAttribute("data-lang", voices[i].lang);
-                        option.setAttribute("data-name", voices[i].name);
-                        voiceSelect.appendChild(option);
-                    }
-                }
-
-                // 再添加 en-US 語音選項
-                for (let i = 0; i < voices.length; i++) {
-                    if (voices[i].lang === "en-US") {
-                        const option = document.createElement("option");
-                        option.textContent = `英文 (${voices[i].name})`;
-
-                        if (voices[i].default) {
-                            option.textContent += " — DEFAULT";
-                        }
-
-                        option.setAttribute("data-lang", voices[i].lang);
-                        option.setAttribute("data-name", voices[i].name);
-                        voiceSelect.appendChild(option);
-                    }
-                }
-            }
-
-            populateVoiceList();
-            if (
-                typeof speechSynthesis !== "undefined" &&
-                speechSynthesis.onvoiceschanged !== undefined
-            ) {
-                speechSynthesis.onvoiceschanged = populateVoiceList;
-            }
-        }
-
- 
-
-
-  let selectedFile = null;
-
-  
+  let selectedFile = null;  
   let isListening = true; // 初始設置為監聽模式
   let isReading = false; // 初始設置為未閱讀狀態
   let audioPlayer = null;
