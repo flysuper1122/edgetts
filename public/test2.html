@@ -226,7 +226,78 @@ input[type=range]::-moz-range-thumb {
 </div>
 <button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換平板模式</button>
 
+<script>
+    // 固定的語音內容
+    const fixedText = "這是一個語音播放的範例，歡迎使用此功能。";
 
+    // 預設音頻格式
+    const voiceFormat = "audio-24khz-96kbitrate-mono-mp3";
+
+    // 生成 SSML
+    function createSSML(text, voiceName, speakSpeed) {
+      return `
+        <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="zh-CN">
+          <voice name="${voiceName}">
+            <prosody rate="${speakSpeed}%">
+              ${text}
+            </prosody>
+          </voice>
+        </speak>
+      `;
+    }
+
+    // 更新語速顯示
+    document.getElementById('speakSpeed').addEventListener('input', function () {
+      document.getElementById('speedValue').textContent = `${this.value}%`;
+    });
+
+    // 播放語音
+    async function playAudio() {
+      const button = document.getElementById('playButton');
+      const audioPlayer = document.getElementById('audioPlayer');
+
+      button.disabled = true; // 禁用按鈕防止重複點擊
+      button.textContent = '生成中...';
+
+      try {
+        // 獲取選擇的聲音和語速
+        const voiceName = document.getElementById('voiceSelect').value;
+        const speakSpeed = document.getElementById('speakSpeed').value;
+
+        // 生成 SSML
+        const ssml = createSSML(fixedText, voiceName, speakSpeed);
+
+        // 發送請求到 TTS API
+        const response = await fetch('/api/ra', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+            'Format': voiceFormat,
+          },
+          body: ssml,
+        });
+
+        if (!response.ok) {
+          throw new Error(`請求失敗：${response.statusText}`);
+        }
+
+        // 將音頻數據轉換為 Blob 並設置為 audio 標籤的來源
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioPlayer.src = audioUrl;
+        audioPlayer.play(); // 自動播放
+      } catch (error) {
+        console.error('發生錯誤：', error);
+        alert('無法播放語音，請檢查網絡連接或稍後重試。');
+      } finally {
+        button.disabled = false;
+        button.textContent = '播放語音';
+      }
+    }
+
+    // 綁定按鈕點擊事件
+    document.getElementById('playButton').addEventListener('click', playAudio);
+  </script>
 <script>
 let startY = 0; // 滑動起始點的 Y 座標
 let isAtTop = true; // 是否處於頁面頂部
@@ -635,15 +706,11 @@ nextPageButton.addEventListener('click', () => {
     // 函數: 發送選中的文本到新的 TTS API 進行處理
  function sendTextToTTS(selectedText, callback) {
     console.log("送出給 TTS 的文本:", selectedText);
-
-    // 使用本地瀏覽器發音
-    const voiceName = selectedVoice;
-    const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
-    const ratePercent = parseFloat(selectedRate); // 使用百分比
-
+const fixedText = selectedText;
+ 
     // 延遲發音
     setTimeout(() => {
-        speakText(selectedText, voiceName, voiceLang, ratePercent, callback);
+      audioPlayer.play(); // 自動播放
     }, 100); // 延遲 100 毫秒
 }
       
