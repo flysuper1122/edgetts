@@ -160,21 +160,17 @@ input[type=range]::-moz-range-thumb {
 }
    #verticalDiv {
             position: fixed;
-            top: 200px; /* 距離頂部50px */
-            right: 15px; /* 距離右側0px */
+            top: 50px; /* 距離頂部50px */
+            right: 2px; /* 距離右側0px */
             z-index: 1000;
             display: flex;
             flex-direction: column; /* 使內容縱向排列 */
-            align-items: center; /* 內容置中 */	
-			
+            align-items: center; /* 內容置中 */
         }
 
         #speakSpeed {
-		
-            z-index: 1000;
             transform: rotate(-90deg); /* 旋轉滑軌 */
             transform-origin: right center; /* 設置旋轉中心 */
-
         }
     </style>
 </head>
@@ -182,7 +178,7 @@ input[type=range]::-moz-range-thumb {
 	 <div class="container">
 
 
-<div style="top: 5px; z-index: 1000; position: fixed; right: 8%;">
+<div style="top: 5px; z-index: 1000; position: fixed; left: 8%;">
     <!-- 聲音選擇 -->
     <label for="voiceSelect">選擇聲音：</label>
     <select id="voiceSelect">
@@ -200,8 +196,9 @@ input[type=range]::-moz-range-thumb {
     </select>
 </div>
 		  <!-- 語速調整 -->
- <div id="verticalDiv">	     
-      <label for="speakSpeed" style="writing-mode: vertical-lr; display: flex; align-items: center; justify-content: center; height: 200px; position: fixed; top: 50px; right: 5px; color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">語速<span id="speedValue" style="writing-mode: horizontal-tb;">0%</span></label>
+ <div id="verticalDiv">		 
+     
+      <label for="speakSpeed">語速：<span id="speedValue">0%</span></label>
       <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)">
     </div>
     
@@ -230,7 +227,7 @@ input[type=range]::-moz-range-thumb {
 
    <button id="sendButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;right: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">朗讀選取文字</button>
   <button id="clearButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;left: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">清除選取文字</button>
-    <label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 240px;left: 0%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
+    <label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 120px;left: 0%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
         <input type="checkbox" id="touchSelectCheckbox" style="writing-mode: vertical-rl; text-orientation: upright;">觸控選取</label>
   
      
@@ -838,8 +835,7 @@ document.body.appendChild(readButton);
 
 function initializeFramePosition() {
   const frame = document.getElementById('movable-frame');
-  frame.style.top = `${frame.offsetTop + 90}px`; // 向上移動 40px
-  frame.style.left = `${frame.offsetLeft - 20}px`; // 向上移動 40px
+  frame.style.top = `${frame.offsetTop - 40}px`; // 向上移動 40px
 }
 
 // 更新按鈕位置
@@ -1219,9 +1215,9 @@ function showPage(page_no) {
      // 更新語速顯示
 function updateRate(value) {
     let adjustedValue = value;
-    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' + '<br>' : '減' + '<br>') + Math.abs(adjustedValue) + '%';
+    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' : '減') + Math.abs(adjustedValue) + '%';
     selectedRate = adjustedValue + '%';
-    document.getElementById('speedValue').innerHTML = displayValue;
+    document.getElementById('speedValue').innerText = displayValue;
 }
 
 // 設置初始語速
