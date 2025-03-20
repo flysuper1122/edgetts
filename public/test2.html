@@ -20,14 +20,6 @@
       margin-bottom: 20px;
 	  z-index:1000;
     }
-	 select {
-      width: 20%;
-      padding: 10px;
-      margin-bottom: 20px;
-	  z-index:10001;
-	  position: fixed;
-	  right:20px;
-    }
 	 input {
       width: 70%;
       padding: 10px;
@@ -200,20 +192,20 @@ input[type=range]::-moz-range-thumb {
 
 <div>
     <!-- 聲音選擇 -->
-    <label for="voiceSelect" style=" padding: 10px; margin-bottom: 20px; z-index:10001; position: fixed; right:400px;">選擇聲音：</label>
-    <select id="voiceSelect">
-      <option value="zh-TW-HsiaoChenNeural">中文：曉臻 (女性)</option>
-      <option value="zh-TW-YunJheNeural">中文：允哲 (男性)</option>
-      <option value="zh-TW-HsiaoYuNeural">中文：曉雨 (女性，兒童音)</option>
-      <option value="en-US-JennyNeural">英文：Jenny (女性)</option>
-      <option value="en-US-GuyNeural">英文：Guy (男性)</option>
-      <option value="en-US-AriaNeural">英文：Aria (女性)</option>
-      <option value="en-US-DavisNeural">英文：Davis (男性)</option>
-      <option value="en-US-JaneNeural">英文：Jane (女性)</option>
-      <option value="en-US-JasonNeural">英文：Jason (男性)</option>
-      <option value="en-US-NancyNeural">英文：Nancy (女性)</option>
-      <option value="en-US-TonyNeural">英文：Tony (男性)</option>
-    </select>
+<label for="voiceSelect" style="padding: 10px; margin-bottom: 20px; z-index: 10001; position: fixed; right: 350px;">選擇聲音：</label>
+<select id="voiceSelect" style="width: 200px; padding: 10px; margin-bottom: 20px; z-index: 10001; position: fixed; right: 150px;">
+  <option value="zh-TW-HsiaoChenNeural">中文：曉臻 (女性)</option>
+  <option value="zh-TW-YunJheNeural">中文：允哲 (男性)</option>
+  <option value="zh-TW-HsiaoYuNeural">中文：曉雨 (女性，兒童音)</option>
+  <option value="en-US-JennyNeural">英文：Jenny (女性)</option>
+  <option value="en-US-GuyNeural">英文：Guy (男性)</option>
+  <option value="en-US-AriaNeural">英文：Aria (女性)</option>
+  <option value="en-US-DavisNeural">英文：Davis (男性)</option>
+  <option value="en-US-JaneNeural">英文：Jane (女性)</option>
+  <option value="en-US-JasonNeural">英文：Jason (男性)</option>
+  <option value="en-US-NancyNeural">英文：Nancy (女性)</option>
+  <option value="en-US-TonyNeural">英文：Tony (男性)</option>
+</select>
 </div>
 		  <!-- 語速調整 -->
  <div id="verticalDiv">	     
