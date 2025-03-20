@@ -276,10 +276,14 @@ input[type=range]::-moz-range-thumb {
     let pdfDoc = null;
     let currentPage = 1;
 
-    function renderPage(pageNum) {
+     function renderPage(pageNum) {
     pdfDoc.getPage(pageNum).then(page => {
-        const scale = 1.2; // 基礎縮放比例
-        const viewport = page.getViewport({ scale: scale });
+        const screenWidth = window.innerWidth; // 獲取螢幕寬度
+        const desiredWidth = screenWidth * 0.95; // 設置期望的寬度（例如螢幕寬度的95%）
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = desiredWidth / viewport.width; // 根據期望寬度計算縮放比例
+
+        const scaledViewport = page.getViewport({ scale: scale });
 
         pdfContainer.innerHTML = ''; // 清空之前的內容
 
@@ -294,16 +298,16 @@ input[type=range]::-moz-range-thumb {
 
         // 根據設備的 DPI 調整 Canvas 解析度
         const dpi = window.devicePixelRatio || 1; // 獲取設備的 DPI
-        pdfCanvas.height = viewport.height * dpi; // 設置 Canvas 高度
-        pdfCanvas.width = viewport.width * dpi;  // 設置 Canvas 寬度
+        pdfCanvas.height = scaledViewport.height * dpi; // 設置 Canvas 高度
+        pdfCanvas.width = scaledViewport.width * dpi;  // 設置 Canvas 寬度
         context.scale(dpi, dpi); // 調整 Canvas 的縮放比例
 
         // 設置 Canvas 的顯示尺寸（CSS 尺寸）
-        pdfCanvas.style.height = `${viewport.height}px`;
-        pdfCanvas.style.width = `${viewport.width}px`;
+        pdfCanvas.style.height = `${scaledViewport.height}px`;
+        pdfCanvas.style.width = `${scaledViewport.width}px`;
 
-        pdfViewer.style.height = viewport.height + 'px';
-        pdfViewer.style.width = viewport.width + 'px';
+        pdfViewer.style.height = scaledViewport.height + 'px';
+        pdfViewer.style.width = scaledViewport.width + 'px';
 
         const textLayerDiv = document.createElement('div');
         textLayerDiv.className = 'textLayer';
@@ -315,7 +319,7 @@ input[type=range]::-moz-range-thumb {
 
         const renderContext = {
             canvasContext: context,
-            viewport: viewport
+            viewport: scaledViewport
         };
         page.render(renderContext);
 
@@ -324,7 +328,7 @@ input[type=range]::-moz-range-thumb {
             pdfjsLib.renderTextLayer({
                 textContent: textContent,
                 container: textLayerDiv,
-                viewport: viewport,
+                viewport: scaledViewport,
             });
             textLayerDiv.style.top = '-4px';
         });
@@ -332,7 +336,6 @@ input[type=range]::-moz-range-thumb {
         pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
     });
 }
-
    
 // 打開 IndexedDB 資料庫
 const openDB = () => {
