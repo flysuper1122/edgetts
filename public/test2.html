@@ -20,26 +20,41 @@
       margin-bottom: 20px;
 	  z-index:1000;
     }
-	 select {
-      width: 20%;
-      padding: 10px;
-      margin-bottom: 20px;
-	  z-index:10001;
-	  position: fixed;
-	  right:20px;
-    }
-	 input {
-      width: 70%;
-      padding: 10px;
-      margin-bottom: 20px;
-	  z-index:10001;
-	  left:20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }  
+select, input, button {
+  font-size: 18px; /* Increase font size for better readability */
+  padding: 15px; /* Increase padding for larger touch targets */
+  margin-bottom: 20px;
+  border-radius: 8px; /* Add rounded corners for a modern look */
+  border: 2px solid #ccc; /* Add border for better visibility */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
+}
+
+select {
+  width: 30%; /* Increase width for better usability */
+  z-index: 10001;
+  position: fixed;
+  right: 20px;
+}
+
+input {
+  width: 20%; /* Increase width for better usability */
+  z-index: 10001;
+  left: 20px;
+}
+
+button {
+  padding: 15px 30px; /* Increase padding for larger touch targets */
+  font-size: 18px; /* Increase font size for better readability */
+  cursor: pointer;
+  background-color: #007BFF; /* Add background color for better visibility */
+  color: white; /* Change text color to white */
+  border: none; /* Remove default border */
+  transition: background-color 0.3s; /* Add transition for hover effect */
+}
+
+button:hover {
+  background-color: #0056b3; /* Change background color on hover */
+}
 audio {
     width: 50%;
     bottom: 5px;
