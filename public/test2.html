@@ -1078,16 +1078,7 @@ document.addEventListener('mouseup', () => {
         }
 
         function clearHighlights() {
-            const textLayerDivs = document.getElementById('viewerContainer').getElementsByClassName('textLayer');
-            
-            for (let textLayer of textLayerDivs) {
-                const spans = textLayer.getElementsByTagName('my-fra');
-                for (let span of spans) {
-                window.speechSynthesis.cancel();
-                    span.style.backgroundColor = ''; // 清除背景顏色
-                    span.dataset.spoken = ''; // 清除已發音標記
-                }
-            }
+         cancelReading();
         }
 
         document.getElementById('sendButton').addEventListener('click', sendHighlightedText);
