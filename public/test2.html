@@ -13,13 +13,7 @@
       margin: 0 auto;
       text-align: center;
     }
-    
-    input[type="range"] {
-      width: 70%;
-      padding: 10px;
-      margin-bottom: 20px;
-	  z-index:1000;
-    }
+
 select, input, button {
   font-size: 18px; /* Increase font size for better readability */
   padding: 15px; /* Increase padding for larger touch targets */
@@ -36,11 +30,6 @@ select {
   right: 20px;
 }
 
-input {
-  width: 20%; /* Increase width for better usability */
-  z-index: 10001;
-  left: 20px;
-}
 
 button {
   padding: 15px 30px; /* Increase padding for larger touch targets */
@@ -233,14 +222,14 @@ input[type=range]::-moz-range-thumb {
 		  <!-- 語速調整 -->
  <div id="verticalDiv">	     
       <label for="speakSpeed" style="writing-mode: vertical-lr; display: flex; align-items: center; justify-content: center; height: 200px; position: fixed; top: 50px; right: 5px; color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">語速<span id="speedValue" style="writing-mode: horizontal-tb;">0%</span></label>
-      <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)">
+      <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)" style="  width:20%;  padding: 10px;  margin-bottom: 20px; z-index:1000;right:15px;position: fixed;">
     </div>
     
     <!-- 音頻播放器 -->
     <audio id="audioPlayer" controls></audio>
   </div>
 <div id="movable-frame"></div>
-<input type="file" id="pdfFileInput">
+<input type="file" id="pdfFileInput" style=" width: 20%; /* Increase width for better usability */  z-index: 10001;  position: fixed;  left: 20px;">
 <div id="viewerContainer" tabindex="0">
     <center><div id="pdfContainer"></div></center>
 </div>
