@@ -31,20 +31,19 @@ select {
   top:5px;
 }
 
+  #prevPage, #nextPage {
+    padding: 15px 30px; /* 增加內邊距以擴大觸控區域 */
+    font-size: 18px; /* 增加字體大小以提高可讀性 */
+    cursor: pointer;
+    background-color: #007BFF; /* 添加背景色以提高可見性 */
+    color: white; /* 將文字顏色改為白色 */
+    border: none; /* 移除默認邊框 */
+    transition: background-color 0.3s; /* 添加過渡效果以提高互動性 */
+  }
 
-button {
-  padding: 15px 30px; /* Increase padding for larger touch targets */
-  font-size: 18px; /* Increase font size for better readability */
-  cursor: pointer;
-  background-color: #007BFF; /* Add background color for better visibility */
-  color: white; /* Change text color to white */
-  border: none; /* Remove default border */
-  transition: background-color 0.3s; /* Add transition for hover effect */
-}
-
-button:hover {
-  background-color: #0056b3; /* Change background color on hover */
-}
+  #prevPage:hover, #nextPage:hover {
+    background-color: #0056b3; /* 懸停時更改背景色 */
+  }
 audio {
     width: 50%;
     bottom: 5px;
@@ -276,7 +275,7 @@ input[type=range]::-moz-range-thumb {
     let pdfDoc = null;
     let currentPage = 1;
 
-     function renderPage(pageNum) {
+    function renderPage(pageNum) {
     pdfDoc.getPage(pageNum).then(page => {
         const screenWidth = window.innerWidth; // 獲取螢幕寬度
         const desiredWidth = screenWidth * 0.95; // 設置期望的寬度（例如螢幕寬度的95%）
@@ -336,6 +335,7 @@ input[type=range]::-moz-range-thumb {
         pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
     });
 }
+
    
 // 打開 IndexedDB 資料庫
 const openDB = () => {
