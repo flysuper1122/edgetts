@@ -14,10 +14,26 @@
       text-align: center;
     }
     
-      input[type="range"] {
+    input[type="range"] {
       width: 70%;
       padding: 10px;
       margin-bottom: 20px;
+	  z-index:1000;
+    }
+	 select {
+      width: 20%;
+      padding: 10px;
+      margin-bottom: 20px;
+	  z-index:10001;
+	  position: fixed;
+	  right:20px;
+    }
+	 input {
+      width: 70%;
+      padding: 10px;
+      margin-bottom: 20px;
+	  z-index:10001;
+	  left:20px;
     }
     button {
       padding: 10px 20px;
@@ -176,22 +192,6 @@ input[type=range]::-moz-range-thumb {
             transform-origin: right center; /* 設置旋轉中心 */
 
         }
-/* 確保 select 元素在最上層 */
-#voiceSelect {
-    z-index: 10001;
-    position: fixed;
-    top: 25px;
-    width:60%;
-    left: 18%;
-}
-
-/* 確保 input[type="file"] 在最上層 */
-#pdfFileInput {
-    z-index: 10001;
-    position: fixed;
-    top: 60px; /* 調整位置，避免與 select 重疊 */
-    left: 18%;
-}
     </style>
 </head>
 <body tabindex="0">
