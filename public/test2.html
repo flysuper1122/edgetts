@@ -1078,7 +1078,16 @@ document.addEventListener('mouseup', () => {
         }
 
         function clearHighlights() {
-         cancelReading();
+            const textLayerDivs = document.getElementById('viewerContainer').getElementsByClassName('textLayer');
+            
+            for (let textLayer of textLayerDivs) {
+                const spans = textLayer.getElementsByTagName('my-fra');
+                for (let span of spans) {
+                window.speechSynthesis.cancel();
+                    span.style.backgroundColor = ''; // 清除背景顏色
+                    span.dataset.spoken = ''; // 清除已發音標記
+                }
+            }
         }
 
         document.getElementById('sendButton').addEventListener('click', sendHighlightedText);
@@ -1100,7 +1109,24 @@ document.addEventListener('mouseup', () => {
         });
         wrapTextInFraTags();
         
-        
+        document.getElementById('sendButton').addEventListener('click', function() {
+    if (isReading) {
+        // 取消朗讀
+        window.speechSynthesis.cancel();
+        this.textContent = "朗讀選取文字";
+        this.classList.remove('button-danger');
+        this.classList.add('button-light');
+        isReading = false;
+    } else {
+        // 開始朗讀
+        sendHighlightedText();
+        this.textContent = "取消朗讀";
+        this.classList.remove('button-light');
+        this.classList.add('button-danger');
+        isReading = true;
+    }
+});
+  
 // 使用 MutationObserver 監聽 DOM 變化
 const observer = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
