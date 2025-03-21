@@ -492,7 +492,10 @@ async function loadPdfFromDrive(fileId) {
         });
     } catch (error) {
         console.error('載入 Google 雲端硬碟 PDF 檔案失敗：', error);
-        alert('無法載入 PDF 檔案，請檢查檔案 ID 是否正確。');
+        // 只有在不是本地檔案時才顯示錯誤訊息
+        if (!fileId.startsWith('http://') && !fileId.startsWith('https://')) {
+            alert('無法載入 PDF 檔案，請檢查檔案 ID 是否正確。');
+        }
     }
 }
 // 當頁面載入時，檢查網址中的檔案名稱
