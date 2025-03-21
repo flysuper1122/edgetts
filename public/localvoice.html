@@ -1442,22 +1442,12 @@ function showPage(page_no) {
 
 
 function updateRate(value) {
-    // 反轉正負方向
-    let adjustedValue = -value;
-    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '語速加' : '語速減') + Math.abs(adjustedValue) + '%';
-    selectedRate = adjustedValue + '%';
-    let speedValueElement = document.getElementById('speedValue');
-    
-    if (adjustedValue > 0) {
-        speedValueElement.innerHTML = '<span class="vertical-text">' + (adjustedValue > 0 ? '語速加' : '語速減') + '</span><br>' + Math.abs(adjustedValue) + '%';
-        speedValueElement.querySelector('.vertical-text').style.writingMode = 'vertical-rl';
-        speedValueElement.querySelector('.vertical-text').style.textOrientation = 'upright';
-    } else {
-        speedValueElement.innerText = displayValue;
-        speedValueElement.style.writingMode = '';
-        speedValueElement.style.textOrientation = '';
+        // 反轉正負方向
+        let adjustedValue = -value;
+        let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '語速加' : '語速減') + Math.abs(adjustedValue) + '%';
+        selectedRate = adjustedValue + '%';
+        document.getElementById('speedValue').innerText = displayValue;
     }
-}
 
 // 設置初始語速
 document.getElementById('speakSpeed').value = -30;
