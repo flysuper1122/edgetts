@@ -15,7 +15,8 @@
 1.本系統可以開啟本地PDF檔案，也可以網址後面加？googlesheetid=試算表id&file=雲端硬碟pdf 檔id，例：https://edgetts-lovat.vercel.app/?googlesheetid=1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc&file=17miE5mg1_GPlerNur0eg0BE_6Y3dC1tu<br>
 2.googlesheet和googledrive檔案要開放知道連結的使用者檢視權。<br>
 3.因為AI有些語詞發音錯誤，可用googlesheet過濾，試算表第一欄為原語詞，第二欄為替換語詞。<br>
-例:https://docs.google.com/spreadsheets/d/1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc/edit?usp=drive_link
+例:https://docs.google.com/spreadsheets/d/1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc/edit?usp=drive_link<br>
+4.雲端硬碟id支援是使用GAS代理伺服器，為分散流量請自行部屬，將edgetts/public/index.html內第338行換成自己的GAS網址。
 
 ### 部署到 Heroku
 
