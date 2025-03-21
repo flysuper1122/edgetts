@@ -336,15 +336,63 @@ input[type=range]::-moz-range-thumb {
     });
 }
 
-   
+// Google Apps Script 代理 URL
+const gasUrl = 'https://script.google.com/macros/s/AKfycbyBsMfSK9C56I7jCwQ2iMEGofS4Ghehvj0biddjMEuJdZFbhSNl6S27BueSOYiSYFPKzg/exec'; // 替換為你的 GAS 部署 URL
+
+function renderPage(pageNum) {
+    pdfDoc.getPage(pageNum).then(page => {
+        const screenWidth = window.innerWidth;
+        const desiredWidth = screenWidth * 0.8;
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = desiredWidth / viewport.width;
+        const scaledViewport = page.getViewport({ scale: scale });
+        pdfContainer.innerHTML = '';
+        const pageContainer = document.createElement('div');
+        pageContainer.className = 'pdf-page-container';
+        const pdfViewer = document.createElement('div');
+        pdfViewer.className = 'pdf-viewer';
+        const pdfCanvas = document.createElement('canvas');
+        const context = pdfCanvas.getContext('2d');
+        const dpi = window.devicePixelRatio || 1;
+        pdfCanvas.height = scaledViewport.height * dpi;
+        pdfCanvas.width = scaledViewport.width * dpi;
+        context.scale(dpi, dpi);
+        pdfCanvas.style.height = `${scaledViewport.height}px`;
+        pdfCanvas.style.width = `${scaledViewport.width}px`;
+        pdfViewer.style.height = scaledViewport.height + 'px';
+        pdfViewer.style.width = scaledViewport.width + 'px';
+        const textLayerDiv = document.createElement('div');
+        textLayerDiv.className = 'textLayer';
+        pageContainer.appendChild(pdfViewer);
+        pdfViewer.appendChild(pdfCanvas);
+        pdfViewer.appendChild(textLayerDiv);
+        pdfContainer.appendChild(pageContainer);
+        const renderContext = {
+            canvasContext: context,
+            viewport: scaledViewport
+        };
+        page.render(renderContext);
+        page.getTextContent().then(textContent => {
+            textLayerDiv.innerHTML = '';
+            pdfjsLib.renderTextLayer({
+                textContent: textContent,
+                container: textLayerDiv,
+                viewport: scaledViewport,
+            });
+            textLayerDiv.style.top = '-4px';
+        });
+        pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
+    });
+}
+
 // 打開 IndexedDB 資料庫
 const openDB = () => {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('pdfDB', 1); // 打開名為 'pdfDB' 的資料庫
+        const request = indexedDB.open('pdfDB', 1);
         request.onupgradeneeded = (e) => {
             const db = e.target.result;
             if (!db.objectStoreNames.contains('pdfFiles')) {
-                db.createObjectStore('pdfFiles', { keyPath: 'id' }); // 創建一個名為 'pdfFiles' 的對象存儲
+                db.createObjectStore('pdfFiles', { keyPath: 'id' });
             }
         };
         request.onsuccess = (e) => resolve(e.target.result);
@@ -358,10 +406,10 @@ const saveFileToIndexedDB = async (file) => {
         const db = await openDB();
         const transaction = db.transaction('pdfFiles', 'readwrite');
         const store = transaction.objectStore('pdfFiles');
-        store.put({ id: 'currentPdf', file }); // 將檔案保存到 'pdfFiles' 中
+        store.put({ id: 'currentPdf', file });
     } catch (error) {
         console.error('保存檔案到 IndexedDB 失敗：', error);
-        throw error; // 將錯誤傳遞給上層處理
+        throw error;
     }
 };
 
@@ -371,11 +419,11 @@ const loadFileFromIndexedDB = async () => {
         const db = await openDB();
         const transaction = db.transaction('pdfFiles', 'readonly');
         const store = transaction.objectStore('pdfFiles');
-        const request = store.get('currentPdf'); // 讀取保存的檔案
+        const request = store.get('currentPdf');
         return new Promise((resolve, reject) => {
             request.onsuccess = (e) => {
                 if (e.target.result) {
-                    resolve(e.target.result.file); // 返回檔案
+                    resolve(e.target.result.file);
                 } else {
                     reject(new Error('IndexedDB 中未找到檔案'));
                 }
@@ -384,7 +432,7 @@ const loadFileFromIndexedDB = async () => {
         });
     } catch (error) {
         console.error('從 IndexedDB 讀取檔案失敗：', error);
-        throw error; // 將錯誤傳遞給上層處理
+        throw error;
     }
 };
 
@@ -394,72 +442,72 @@ const clearIndexedDB = async (forceClear = false) => {
         const db = await openDB();
         const transaction = db.transaction('pdfFiles', 'readwrite');
         const store = transaction.objectStore('pdfFiles');
-
         if (forceClear) {
-            store.delete('currentPdf'); // 刪除保存的檔案
+            store.delete('currentPdf');
         }
-
-        // 清除網址中的檔案名稱
         updateUrl(null);
     } catch (error) {
         console.error('清除 IndexedDB 失敗：', error);
     }
 };
 
-
 // 更新網址中的檔案名稱
 function updateUrl(fileName) {
     const newUrl = new URL(window.location.href);
     if (fileName) {
-        newUrl.searchParams.set('file', fileName); // 不使用 encodeURIComponent
+        newUrl.searchParams.set('file', fileName);
     } else {
-        newUrl.searchParams.delete('file'); // 清除檔案名稱
+        newUrl.searchParams.delete('file');
     }
     window.history.replaceState({}, '', newUrl);
 }
 
-// 載入遠端 PDF 檔案
-function loadPdfFromUrl(url) {
-    // 檢查是否為本地檔案
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        console.log('本地檔案，跳過遠端載入。');
-        return;
+// 從 Google 雲端硬碟載入 PDF 檔案
+async function loadPdfFromDrive(fileId) {
+    const url = `${gasUrl}?fileId=${fileId}`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch file');
+        }
+        const data = await response.json();
+        const fileContent = atob(data.fileContent);
+        const arrayBuffer = new ArrayBuffer(fileContent.length);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < fileContent.length; i++) {
+            uint8Array[i] = fileContent.charCodeAt(i);
+        }
+        const blob = new Blob([uint8Array], { type: 'application/pdf' });
+        const file = new File([blob], data.fileName, { type: 'application/pdf' });
+        await saveFileToIndexedDB(file);
+        const typedarray = new Uint8Array(arrayBuffer);
+        pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+            pdfDoc = pdf;
+            renderPage(currentPage);
+        }).catch(error => {
+            console.error('PDF 檔案載入失敗：', error);
+            alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
+        });
+    } catch (error) {
+        console.error('載入 Google 雲端硬碟 PDF 檔案失敗：', error);
+        alert('無法載入 PDF 檔案，請檢查檔案 ID 是否正確。');
     }
-
-    pdfjsLib.getDocument(url).promise.then(pdf => {
-        pdfDoc = pdf;
-        renderPage(currentPage);
-
-        // 更新網址中的檔案名稱
-        updateUrl(url);
-    }).catch(error => {
-        console.error('載入 PDF 失敗：', error);
-        alert('無法載入 PDF 檔案，請檢查 URL 是否正確。');
-    });
 }
 
 // 當頁面載入時，檢查網址中的檔案名稱
 window.addEventListener('load', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const fileParam = urlParams.get('file');
-
     if (fileParam) {
-        // 判斷是遠端檔案還是本地檔案
         if (fileParam.startsWith('http://') || fileParam.startsWith('https://')) {
-            // 遠端檔案：清空 IndexedDB 中的檔案
             await clearIndexedDB();
-
-            // 直接載入遠端 PDF
             loadPdfFromUrl(fileParam);
         } else {
-            // 本地檔案：從 IndexedDB 讀取
             try {
                 const file = await loadFileFromIndexedDB();
                 if (file) {
-                    // 檢查是否為同一檔案
                     if (file.name === fileParam) {
                         console.log('當前檔案與 URL 中的檔案相同，跳過重新載入。');
-                        // 直接載入 PDF
                         const fileReader = new FileReader();
                         fileReader.onload = function () {
                             const typedarray = new Uint8Array(this.result);
@@ -477,7 +525,6 @@ window.addEventListener('load', async () => {
                         };
                         fileReader.readAsArrayBuffer(file);
                     } else {
-                        // 如果不是同一檔案，則清空 IndexedDB 並保存新檔案
                         await clearIndexedDB();
                         await saveFileToIndexedDB(file);
                         updateUrl(file.name);
@@ -489,22 +536,14 @@ window.addEventListener('load', async () => {
         }
     }
 });
-
 // 當使用者選擇檔案時
 pdfFileInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
     if (file) {
         try {
-            // 強制清空 IndexedDB 中的檔案
             await clearIndexedDB(true);
-
-            // 將檔案保存到 IndexedDB
             await saveFileToIndexedDB(file);
-
-            // 更新網址中的檔案名稱
             updateUrl(file.name);
-
-            // 載入 PDF
             const fileReader = new FileReader();
             fileReader.onload = function () {
                 const typedarray = new Uint8Array(this.result);
@@ -526,7 +565,6 @@ pdfFileInput.addEventListener('change', async (event) => {
             alert('保存檔案失敗，請重試。');
         }
     } else {
-        // 如果沒有選擇檔案，則清除網址中的檔案名稱
         updateUrl(null);
     }
 });
@@ -538,7 +576,6 @@ prevPageButton.addEventListener('click', () => {
         renderPage(currentPage);
     }
 });
-
 nextPageButton.addEventListener('click', () => {
     if (currentPage < pdfDoc.numPages) {
         currentPage++;
@@ -546,13 +583,12 @@ nextPageButton.addEventListener('click', () => {
     }
 });
 
-    // 從 URL 參數中讀取 PDF 檔案的 URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const pdfUrl = urlParams.get('file');
-    if (pdfUrl) {
-        loadPdfFromUrl(pdfUrl);
-    }
-
+// 從 URL 參數中讀取 PDF 檔案的 ID
+const urlParams = new URLSearchParams(window.location.search);
+const fileId = urlParams.get('file');
+if (fileId) {
+    loadPdfFromDrive(fileId);
+}
 </script>
  <script>
   
