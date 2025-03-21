@@ -259,12 +259,7 @@ input[type=range]::-moz-range-thumb {
 
 
 <script>
-
-
-
-
-
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
     const pdfFileInput = document.getElementById('pdfFileInput');
     const pdfContainer = document.getElementById('pdfContainer');
@@ -452,6 +447,7 @@ const clearIndexedDB = async (forceClear = false) => {
 };
 
 // 更新網址中的檔案名稱
+// 更新網址中的檔案名稱
 function updateUrl(fileName) {
     const newUrl = new URL(window.location.href);
     if (fileName) {
@@ -461,14 +457,19 @@ function updateUrl(fileName) {
     }
     window.history.replaceState({}, '', newUrl);
 }
+
 // 從 Google 雲端硬碟載入 PDF 檔案
 async function loadPdfFromDrive(fileId, showLoading = true) {
     const url = `${gasUrl}?fileId=${fileId}`;
+
+    // 檢查 fileId 是否以 .pdf 結尾
+    const isPdfUrl = fileId && fileId.toLowerCase().endsWith('.pdf');
+
     try {
-        if (showLoading) {
-            // 顯示載入中提示
+        // 如果 showLoading 為 true 且 URL 不以 .pdf 結尾，則顯示載入動畫
+        if (showLoading && !isPdfUrl) {
             Swal.fire({
-                title: '載入中請稍候',
+                title: '載入中請稍後',
                 text: '正在從雲端硬碟載入檔案...',
                 allowOutsideClick: false,
                 didOpen: () => {
@@ -496,7 +497,7 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
             pdfDoc = pdf;
             renderPage(currentPage);
             updateUrl(fileId); // 更新網址列
-            if (showLoading) {
+            if (showLoading && !isPdfUrl) {
                 Swal.close(); // 關閉載入中提示
             }
         }).catch(error => {
@@ -509,7 +510,7 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         });
     } catch (error) {
         console.error('載入 Google 雲端硬碟 PDF 檔案失敗：', error);
-        if (showLoading) {
+        if (showLoading && !isPdfUrl) {
             Swal.fire({
                 icon: 'error',
                 title: '載入失敗',
@@ -518,10 +519,20 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         }
     }
 }
+
 // 當頁面載入時，檢查網址中的檔案名稱
 window.addEventListener('load', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const fileParam = urlParams.get('file');
+    const previousUrl = sessionStorage.getItem('previousUrl');
+    const currentUrl = window.location.href;
+
+    // 判斷是否為頁面重新整理
+    const isPageRefresh = previousUrl === currentUrl;
+
+    // 判斷 URL 是否以 .pdf 結尾
+    const isPdfUrl = fileParam && fileParam.toLowerCase().endsWith('.pdf');
+
     if (fileParam) {
         if (fileParam.startsWith('http://') || fileParam.startsWith('https://')) {
             await clearIndexedDB();
@@ -556,15 +567,18 @@ window.addEventListener('load', async () => {
                     }
                 } else {
                     // 如果 IndexedDB 中沒有檔案，從 Google 雲端硬碟載入
-                    await loadPdfFromDrive(fileParam, false); // 不顯示載入中提示
+                    await loadPdfFromDrive(fileParam, !isPageRefresh && !isPdfUrl); // 如果不是頁面重新整理且 URL 不以 .pdf 結尾，則顯示載入中提示
                 }
             } catch (error) {
                 console.error('讀取檔案失敗：', error);
                 // 如果讀取失敗，從 Google 雲端硬碟載入
-                await loadPdfFromDrive(fileParam, false); // 不顯示載入中提示
+                await loadPdfFromDrive(fileParam, !isPageRefresh && !isPdfUrl); // 如果不是頁面重新整理且 URL 不以 .pdf 結尾，則顯示載入中提示
             }
         }
     }
+
+    // 更新 sessionStorage 中的 previousUrl
+    sessionStorage.setItem('previousUrl', currentUrl);
 });
 // 當使用者選擇檔案時
 pdfFileInput.addEventListener('change', async (event) => {
@@ -619,6 +633,7 @@ const fileId = urlParams.get('file');
 if (fileId) {
     loadPdfFromDrive(fileId);
 }
+
 </script>
  <script>
   
