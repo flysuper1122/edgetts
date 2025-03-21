@@ -255,10 +255,13 @@ input[type=range]::-moz-range-thumb {
   
      
 
-<button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換平板模式</button>
+<button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換瀏覽器語音</button>
 
 
 <script>
+	function redirectToNewPage() {
+    window.location.href = 'localvoice.html';
+}
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
     const pdfFileInput = document.getElementById('pdfFileInput');
