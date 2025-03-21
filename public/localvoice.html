@@ -1440,26 +1440,23 @@ function showPage(page_no) {
         }
 
 
+
 function updateRate(value) {
-    let adjustedValue = value;
-    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '<font style="writing-mode: vertical-lr;">'+'語速'+'加' +'</font>' + '<br>' : '<font style="writing-mode: vertical-lr;">'+'語速'+'減'+'</font>'  + '<br>') + Math.abs(adjustedValue) + '%';
+    // 反轉正負方向
+    let adjustedValue = -value;
+    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '語速加' : '語速減') + Math.abs(adjustedValue) + '%';
     selectedRate = adjustedValue + '%';
-    document.getElementById('speedValue').innerHTML = displayValue;
-
-    // 設置語音合成速率
-    let rate = 1 + (adjustedValue / 100 * 2); // 計算語速
-
-    // 限制語速在合理範圍內（0.5 到 3）
-    rate = Math.max(0.5, Math.min(rate, 3)); // 確保 rate 在 0.5 到 3 之間
-
-    // 更新語速
-    speechSynthesis.getVoices().forEach(voice => {
-        let utterance = new SpeechSynthesisUtterance();
-        utterance.voice = voice;
-        utterance.rate = rate;
-    });
-
-    console.log('當前語速:', rate); // 用於除錯
+    let speedValueElement = document.getElementById('speedValue');
+    
+    if (adjustedValue > 0) {
+        speedValueElement.innerHTML = '<span class="vertical-text">' + (adjustedValue > 0 ? '語速加' : '語速減') + '</span><br>' + Math.abs(adjustedValue) + '%';
+        speedValueElement.querySelector('.vertical-text').style.writingMode = 'vertical-rl';
+        speedValueElement.querySelector('.vertical-text').style.textOrientation = 'upright';
+    } else {
+        speedValueElement.innerText = displayValue;
+        speedValueElement.style.writingMode = '';
+        speedValueElement.style.textOrientation = '';
+    }
 }
 
 // 設置初始語速
