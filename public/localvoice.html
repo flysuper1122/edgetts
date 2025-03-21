@@ -868,7 +868,7 @@ function highlightCurrentSentence(sentence) {
     const textLayers = pdfContainer.getElementsByClassName('textLayer');
     let spansArray = []; // 存儲所有 <my-fra> 標籤
 
-    // 將所有 <my-fra> 標籤存儲到數組中
+    // 將所有 <my-fra> 標籤存儲到數組中，並按順序排列
     for (let textLayer of textLayers) {
         const spans = textLayer.getElementsByTagName('my-fra');
         for (let span of spans) {
@@ -892,89 +892,44 @@ function highlightCurrentSentence(sentence) {
         }
     }
 
-    // 調試信息：輸出分段後的句子
-    console.log('分段後的句子:', cleanedSentences);
-
-    // 獨立標示每個句子
+    // 按順序標示每個句子
+    let currentIndex = 0; // 當前遍歷到的字符索引
     for (let s = 0; s < cleanedSentences.length; s++) {
         const cleanedSentence = cleanedSentences[s];
         let sentenceIndex = 0; // 用於追蹤當前句子字符位置
 
-        // 檢查第一個字符的匹配
-        let startIndex = -1; // 用於記錄第一個匹配字符的位置
-        for (let i = 0; i < spansArray.length; i++) {
-            const span = spansArray[i];
+        // 從當前索引開始，尋找匹配的字符
+        while (currentIndex < spansArray.length && sentenceIndex < cleanedSentence.length) {
+            const span = spansArray[currentIndex];
             const char = span.textContent.trim(); // 去除字符前後空白
 
             // 如果字符是空白字符，則跳過
             if (char === '') {
-                continue;
-            }
-
-            // 如果字符匹配句子的第一個字符
-            if (char === cleanedSentence[0]) {
-                startIndex = i; // 記錄匹配的位置
-                break; // 找到後跳出循環
-            }
-        }
-
-        // 如果找不到匹配的第一個字符，則跳過該句子
-        if (startIndex === -1) {
-            console.error(`未找到句子 "${cleanedSentence}" 的第一個字符`);
-            continue;
-        }
-
-        // 從匹配的第一個字符開始標示
-        for (let i = startIndex; i < spansArray.length; i++) {
-            const span = spansArray[i];
-            const char = span.textContent.trim(); // 去除字符前後空白
-
-            // 調試信息：輸出當前字符和索引
-            console.log(`句子 ${s + 1}, 字符: ${char}, 索引: ${i}, 句子索引: ${sentenceIndex}`);
-
-            // 如果字符是空白字符，則跳過
-            if (char === '') {
+                currentIndex++;
                 continue;
             }
 
             // 如果字符匹配
-            if (sentenceIndex < cleanedSentence.length && char === cleanedSentence[sentenceIndex]) {
+            if (char === cleanedSentence[sentenceIndex]) {
                 span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)'; // 高亮顯示
                 sentenceIndex++;
+            } else {
+                // 如果字符不匹配，則清除當前句子的高亮
+                for (let i = currentIndex - sentenceIndex; i < currentIndex; i++) {
+                    spansArray[i].style.backgroundColor = ''; // 清除背景顏色
+                }
+                sentenceIndex = 0; // 重置句子索引
             }
 
-            // 如果當前句子標示完成，則跳出循環
-            if (sentenceIndex >= cleanedSentence.length) {
-                break;
-            }
+            currentIndex++; // 移動到下一個字符
         }
 
-        // 如果正向比對未完全匹配，則進行反向比對（從右到左）
-        if (sentenceIndex < cleanedSentence.length) {
-            for (let i = startIndex - 1; i >= 0; i--) {
-                const span = spansArray[i];
-                const char = span.textContent.trim(); // 去除字符前後空白
-
-                // 如果字符是空白字符，則跳過
-                if (char === '') {
-                    continue;
-                }
-
-                // 如果字符匹配
-                if (sentenceIndex < cleanedSentence.length && char === cleanedSentence[sentenceIndex]) {
-                    span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)'; // 高亮顯示
-                    sentenceIndex++;
-                }
-
-                // 如果當前句子標示完成，則跳出循環
-                if (sentenceIndex >= cleanedSentence.length) {
-                    break;
-                }
-            }
+        // 如果句子標示完成，則繼續下一個句子
+        if (sentenceIndex >= cleanedSentence.length) {
+            console.log(`句子 ${s + 1} 標示完成: ${cleanedSentence}`);
+        } else {
+            console.error(`句子 ${s + 1} 標示失敗: ${cleanedSentence}`);
         }
-
-        // 調試信息：輸出當前句子的匹配結果
-        console.log(`句子 ${s + 1} 匹配完成，句子索引: ${sentenceIndex}, 句子長度: ${cleanedSentence.length}`);
     }
 }
 // 可移動框的功能
