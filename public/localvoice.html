@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>PDF.js 多頁範例</title>
+    <title>語音報讀系統</title>
       <style>
 	     body {
       font-family: Arial, sans-serif;
@@ -179,7 +178,7 @@ input[type=range]::-moz-range-thumb {
     cursor: pointer;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
-   #verticalDiv {
+#verticalDiv {
             position: fixed;
             top: 200px; /* 距離頂部50px */
             right: 15px; /* 距離右側0px */
@@ -198,6 +197,9 @@ input[type=range]::-moz-range-thumb {
 
         }
     </style>
+	  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 </head>
 <body tabindex="0">
 <div id="movable-frame"></div>
@@ -212,8 +214,13 @@ input[type=range]::-moz-range-thumb {
     <button id="nextPage">下一頁</button>
 	</center>	
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 
+ <!-- 語速調整 -->
+ <div id="verticalDiv">	     
+      <label for="speakSpeed" style="writing-mode: vertical-lr; display: flex; align-items: center; justify-content: center; height: 200px; position: fixed; top: 50px; right: 5px; color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;"><span id="speedValue" style="position: fixed; top: 120px; writing-mode: horizontal-tb;right: 0px;">0%</span></label>
+      <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)" style="  width:20%;  padding: 10px;  margin-bottom: 20px; z-index:1000;right:15px;position: fixed;">
+    </div>
+    
 <button id="toggle-button" style="position: fixed; width: 160px; height: 40px; bottom: 5px; left: 47%; z-index: 1000; color: black; font-size: 16px; font-weight: bold; color: rgb(134, 101, 224); font-size: 20px; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px; display: flex; align-items: center; justify-content: center;">暫停</button>
     
   <button id="select-all-text" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;right: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" >整頁朗讀</button>
@@ -222,19 +229,13 @@ input[type=range]::-moz-range-thumb {
 
    <button id="sendButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;right: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">朗讀選取文字</button>
   <button id="clearButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;left: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">清除選取文字</button>
-    <label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 120px;left: 0%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
-        <input type="checkbox" id="touchSelectCheckbox" style="writing-mode: vertical-rl; text-orientation: upright;">觸控選取</label>
+  <label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 300px;left: 2px; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
+        <input type="checkbox" id="touchSelectCheckbox" style="writing-mode: vertical-rl; text-orientation: upright; width: 30px; height: 30px; position: fixed;left: 1px;top: 260px;">觸控選取</label>
   <div style=" position: fixed;  top: 30px; right:15px; z-index: 2000;">  
 聲音選擇<select id="voiceSelect"></select>
 </div>    
      
-<div style=" writing-mode: vertical-rl; text-orientation: upright; height:800px; width:50px;z-index: 1000; position: fixed; right:0%; top:40px; transform: translateY(20%);">
-  <span  style=" position: fixed;top:0px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">語速調整</span>
-    <label for="speedSlider" style="font-weight: bold; color: rgb(134, 101, 224);  position: fixed;right:3px;top:90px;font-size: 20px; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">      
-    <input type="range" id="speedSlider" name="rate" min="-50" max="50" value="30" oninput="updateRate(this.value)" style="font-size: 20px;left:30%;width: 10px; height: 400px;">     
-	</label>
-    <span id="speedValue" style=" position: fixed;right:0%;top:550px;font-weight: bold; color: rgb(134, 101, 224); font-size: 20px;">減30%</span>   
-</div>
+
 <button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換網路語音</button>
 
 
@@ -514,7 +515,6 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
 }
 
 // 當頁面載入時，檢查網址中的檔案名稱
-// 在頁面載入時檢查 sessionStorage 中的頁數
 window.addEventListener('load', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const fileParam = urlParams.get('file');
@@ -526,12 +526,6 @@ window.addEventListener('load', async () => {
 
     // 判斷 URL 是否以 .pdf 結尾
     const isPdfUrl = fileParam && fileParam.toLowerCase().endsWith('.pdf');
-
-    // 檢查 sessionStorage 中是否有存儲的頁數
-    const storedPage = sessionStorage.getItem('currentPage');
-    if (storedPage && isPageRefresh) {
-        currentPage = parseInt(storedPage, 10);
-    }
 
     if (fileParam) {
         if (fileParam.startsWith('http://') || fileParam.startsWith('https://')) {
@@ -549,7 +543,7 @@ window.addEventListener('load', async () => {
                             const typedarray = new Uint8Array(this.result);
                             pdfjsLib.getDocument(typedarray).promise.then(pdf => {
                                 pdfDoc = pdf;
-                                renderPage(currentPage); // 跳轉到存儲的頁數
+                                renderPage(currentPage);
                             }).catch(error => {
                                 console.error('PDF 檔案載入失敗：', error);
                                 alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
@@ -580,24 +574,6 @@ window.addEventListener('load', async () => {
     // 更新 sessionStorage 中的 previousUrl
     sessionStorage.setItem('previousUrl', currentUrl);
 });
-
-// 在頁面切換時更新 sessionStorage
-prevPageButton.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        renderPage(currentPage);
-        sessionStorage.setItem('currentPage', currentPage); // 更新 sessionStorage
-    }
-});
-
-nextPageButton.addEventListener('click', () => {
-    if (currentPage < pdfDoc.numPages) {
-        currentPage++;
-        renderPage(currentPage);
-        sessionStorage.setItem('currentPage', currentPage); // 更新 sessionStorage
-    }
-});
-
 // 當使用者選擇檔案時
 pdfFileInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
@@ -606,7 +582,6 @@ pdfFileInput.addEventListener('change', async (event) => {
             await clearIndexedDB(true);
             await saveFileToIndexedDB(file);
             updateUrl(file.name);
-            sessionStorage.removeItem('currentPage'); // 清空 sessionStorage 中的頁數
             const fileReader = new FileReader();
             fileReader.onload = function () {
                 const typedarray = new Uint8Array(this.result);
@@ -631,6 +606,21 @@ pdfFileInput.addEventListener('change', async (event) => {
         updateUrl(null);
     }
 });
+
+// 上一頁和下一頁按鈕的事件監聽
+prevPageButton.addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPage(currentPage);
+    }
+});
+nextPageButton.addEventListener('click', () => {
+    if (currentPage < pdfDoc.numPages) {
+        currentPage++;
+        renderPage(currentPage);
+    }
+});
+
 // 從 URL 參數中讀取 PDF 檔案的 ID
 const urlParams = new URLSearchParams(window.location.search);
 const fileId = urlParams.get('file');
@@ -905,7 +895,7 @@ function highlightCurrentSentence(sentence) {
     const textLayers = pdfContainer.getElementsByClassName('textLayer');
     let spansArray = []; // 存儲所有 <my-fra> 標籤
 
-    // 將所有 <my-fra> 標籤存儲到數組中
+    // 將所有 <my-fra> 標籤存儲到數組中，並按順序排列
     for (let textLayer of textLayers) {
         const spans = textLayer.getElementsByTagName('my-fra');
         for (let span of spans) {
@@ -929,89 +919,44 @@ function highlightCurrentSentence(sentence) {
         }
     }
 
-    // 調試信息：輸出分段後的句子
-    console.log('分段後的句子:', cleanedSentences);
-
-    // 獨立標示每個句子
+    // 按順序標示每個句子
+    let currentIndex = 0; // 當前遍歷到的字符索引
     for (let s = 0; s < cleanedSentences.length; s++) {
         const cleanedSentence = cleanedSentences[s];
         let sentenceIndex = 0; // 用於追蹤當前句子字符位置
 
-        // 檢查第一個字符的匹配
-        let startIndex = -1; // 用於記錄第一個匹配字符的位置
-        for (let i = 0; i < spansArray.length; i++) {
-            const span = spansArray[i];
+        // 從當前索引開始，尋找匹配的字符
+        while (currentIndex < spansArray.length && sentenceIndex < cleanedSentence.length) {
+            const span = spansArray[currentIndex];
             const char = span.textContent.trim(); // 去除字符前後空白
 
             // 如果字符是空白字符，則跳過
             if (char === '') {
-                continue;
-            }
-
-            // 如果字符匹配句子的第一個字符
-            if (char === cleanedSentence[0]) {
-                startIndex = i; // 記錄匹配的位置
-                break; // 找到後跳出循環
-            }
-        }
-
-        // 如果找不到匹配的第一個字符，則跳過該句子
-        if (startIndex === -1) {
-            console.error(`未找到句子 "${cleanedSentence}" 的第一個字符`);
-            continue;
-        }
-
-        // 從匹配的第一個字符開始標示
-        for (let i = startIndex; i < spansArray.length; i++) {
-            const span = spansArray[i];
-            const char = span.textContent.trim(); // 去除字符前後空白
-
-            // 調試信息：輸出當前字符和索引
-            console.log(`句子 ${s + 1}, 字符: ${char}, 索引: ${i}, 句子索引: ${sentenceIndex}`);
-
-            // 如果字符是空白字符，則跳過
-            if (char === '') {
+                currentIndex++;
                 continue;
             }
 
             // 如果字符匹配
-            if (sentenceIndex < cleanedSentence.length && char === cleanedSentence[sentenceIndex]) {
+            if (char === cleanedSentence[sentenceIndex]) {
                 span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)'; // 高亮顯示
                 sentenceIndex++;
+            } else {
+                // 如果字符不匹配，則清除當前句子的高亮
+                for (let i = currentIndex - sentenceIndex; i < currentIndex; i++) {
+                    spansArray[i].style.backgroundColor = ''; // 清除背景顏色
+                }
+                sentenceIndex = 0; // 重置句子索引
             }
 
-            // 如果當前句子標示完成，則跳出循環
-            if (sentenceIndex >= cleanedSentence.length) {
-                break;
-            }
+            currentIndex++; // 移動到下一個字符
         }
 
-        // 如果正向比對未完全匹配，則進行反向比對（從右到左）
-        if (sentenceIndex < cleanedSentence.length) {
-            for (let i = startIndex - 1; i >= 0; i--) {
-                const span = spansArray[i];
-                const char = span.textContent.trim(); // 去除字符前後空白
-
-                // 如果字符是空白字符，則跳過
-                if (char === '') {
-                    continue;
-                }
-
-                // 如果字符匹配
-                if (sentenceIndex < cleanedSentence.length && char === cleanedSentence[sentenceIndex]) {
-                    span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)'; // 高亮顯示
-                    sentenceIndex++;
-                }
-
-                // 如果當前句子標示完成，則跳出循環
-                if (sentenceIndex >= cleanedSentence.length) {
-                    break;
-                }
-            }
+        // 如果句子標示完成，則繼續下一個句子
+        if (sentenceIndex >= cleanedSentence.length) {
+            console.log(`句子 ${s + 1} 標示完成: ${cleanedSentence}`);
+        } else {
+            console.error(`句子 ${s + 1} 標示失敗: ${cleanedSentence}`);
         }
-
-        // 調試信息：輸出當前句子的匹配結果
-        console.log(`句子 ${s + 1} 匹配完成，句子索引: ${sentenceIndex}, 句子長度: ${cleanedSentence.length}`);
     }
 }
 // 可移動框的功能
@@ -1494,18 +1439,25 @@ function showPage(page_no) {
             selectedVoice = checkbox.checked ? checkbox.value : (checkbox.id === 'chinese' ? englishCheckbox.value : chineseCheckbox.value);
         }
 
-     let selectedRate = '-30%'; // 預設語音
 
-    function updateRate(value) {
-        // 反轉正負方向
-        let adjustedValue = -value;
-        let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '加' : '減') + Math.abs(adjustedValue) + '%';
-        selectedRate = adjustedValue + '%';
-        document.getElementById('speedValue').innerText = displayValue;
-    }
+function updateRate(value) {
+    let adjustedValue = value;
+    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '<font style="writing-mode: vertical-lr;">'+'語速'+'加' +'</font>' + '<br>' : '<font style="writing-mode: vertical-lr;">'+'語速'+'減'+'</font>'  + '<br>') + Math.abs(adjustedValue) + '%';
+    selectedRate = adjustedValue + '%';
+    document.getElementById('speedValue').innerHTML = displayValue;
 
-    // Set initial position correctly
-    document.getElementById('speedSlider').value = 30;
+    // 設置語音合成速率
+    let rate = 1 + (adjustedValue / 100*2); // 將速率範圍設置為 0.5 到 3
+    speechSynthesis.getVoices().forEach(voice => {
+        let utterance = new SpeechSynthesisUtterance();
+        utterance.voice = voice;
+        utterance.rate = rate;
+    });
+}
+
+// 設置初始語速
+document.getElementById('speakSpeed').value = -30;
+updateRate(-30);
 
         
 </script>
