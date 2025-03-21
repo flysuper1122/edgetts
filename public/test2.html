@@ -250,8 +250,8 @@ input[type=range]::-moz-range-thumb {
 
    <button id="sendButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;right: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">朗讀選取文字</button>
   <button id="clearButton" class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; bottom: 5px;left: 0%; z-index: 2000;color:black;font-size:20px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;display:none;">清除選取文字</button>
-    <label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 240px;left: 0%; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
-        <input type="checkbox" id="touchSelectCheckbox" style="writing-mode: vertical-rl; text-orientation: upright;">觸控選取</label>
+    <label style="writing-mode: vertical-rl; text-orientation: upright;position: fixed; top: 300px;left: 2px; z-index: 1000;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
+        <input type="checkbox" id="touchSelectCheckbox" style="writing-mode: vertical-rl; text-orientation: upright; width: 30px; height: 30px; position: fixed;left: 1px;top: 260px;">觸控選取</label>
   
      
 
@@ -568,94 +568,132 @@ nextPageButton.addEventListener('click', () => {
     let isFinding = false; // 用於追蹤是否有未完成的查找操作
 
     // 函數: 發送選中的文本到新的 TTS API 進行處理
-function sendTextToTTS(selectedText, callback) {
-    console.log("送出給 TTS 的文本:", selectedText);
 
-    // 獲取選擇的聲音和語速
-    const voiceName = document.getElementById("voiceSelect").value;
-    const ratePercent = parseFloat(document.getElementById('speakSpeed').value); // 使用百分比
-
-    // 生成 SSML
-    const ssml = createSSML(selectedText, voiceName, ratePercent);
-
-    // 發送請求到 TTS API
-    fetch('/api/ra', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain',
-            'Format': 'audio-24khz-96kbitrate-mono-mp3',
-        },
-        body: ssml,
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`請求失敗：${response.statusText}`);
+        function getSheetIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('googlesheetid');
         }
-        return response.blob();
-    })
-    .then(audioBlob => {
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audioPlayer = document.getElementById('audioPlayer');
-        audioPlayer.src = audioUrl;
-        audioPlayer.play(); // 自動播放
 
-        // 設置音頻播放完成後的回調
-        audioPlayer.onended = callback;
-    })
-    .catch(error => {
-        console.error('發生錯誤：', error);
-        alert('無法播放語音，請檢查網絡連接或稍後重試。');
-    });
-}
+        function fetchSheetData(sheetId) {
+            const base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?`;
+            const query = encodeURIComponent('Select *');
+            const url = `${base}&tq=${query}`;
 
-function createSSML(text, voiceName, ratePercent) {
-    return `
-        <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="zh-CN">
-          <voice name="${voiceName}">
-            <prosody rate="${ratePercent}%">
-              ${text}
-            </prosody>
-          </voice>
-        </speak>
-    `;
-}
+            return fetch(url)
+                .then(res => res.text())
+                .then(rep => JSON.parse(rep.substr(47).slice(0, -2)))
+                .catch(err => {
+                    console.error('Error fetching data:', err);
+                    return null;
+                });
+        }
 
-const selectAllTextButton = document.getElementById('select-all-text');
-let sentences = [];
-let currentSentenceIndex = 0;
-let isReading = false;
+        function replaceTextWithSheetData(text, data) {
+            if (!data) return text;
 
-selectAllTextButton.addEventListener('click', function() {
-    clearHighlights();
-    if (isReading) {
-        // 取消朗讀
-        cancelReading();
-    } else {
-        // 開始朗讀
-        const pdfContainer = document.getElementById('pdfContainer');
-        const textLayers = pdfContainer.getElementsByClassName('textLayer');
-        let fullText = '';
+            data.table.rows.forEach(row => {
+                const [original, replacement] = row.c.map(cell => cell.v);
+                const regex = new RegExp(original, 'g');
+                text = text.replace(regex, replacement);
+            });
 
-        for (let textLayer of textLayers) {
-            const spans = textLayer.getElementsByTagName('span');
-            for (let span of spans) {
-                fullText += span.textContent + ' ';
+            return text;
+        }
+
+        async function sendTextToTTS(selectedText, callback) {
+            
+
+            const sheetId = getSheetIdFromUrl();
+            if (sheetId) {
+                const data = await fetchSheetData(sheetId);
+                selectedText = replaceTextWithSheetData(selectedText, data);
             }
+console.log("送出給 TTS 的文本:", selectedText);
+            // 獲取選擇的聲音和語速
+            const voiceName = document.getElementById("voiceSelect").value;
+            const ratePercent = parseFloat(document.getElementById('speakSpeed').value); // 使用百分比
+
+            // 生成 SSML
+            const ssml = createSSML(selectedText, voiceName, ratePercent);
+
+            // 發送請求到 TTS API
+            fetch('/api/ra', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain',
+                    'Format': 'audio-24khz-96kbitrate-mono-mp3',
+                },
+                body: ssml,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`請求失敗：${response.statusText}`);
+                }
+                return response.blob();
+            })
+            .then(audioBlob => {
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioPlayer = document.getElementById('audioPlayer');
+                audioPlayer.src = audioUrl;
+                audioPlayer.play(); // 自動播放
+
+                // 設置音頻播放完成後的回調
+                audioPlayer.onended = callback;
+            })
+            .catch(error => {
+                console.error('發生錯誤：', error);
+                alert('無法播放語音，請檢查網絡連接或稍後重試。');
+            });
         }
 
-        const cleanedText = fullText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-        sentences = cleanedText.split(/(?<=[。！？])/); // 根據標點符號分句
-        currentSentenceIndex = 0;
-        isReading = true;
+        function createSSML(text, voiceName, ratePercent) {
+            return `
+                <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="zh-CN">
+                  <voice name="${voiceName}">
+                    <prosody rate="${ratePercent}%">
+                      ${text}
+                    </prosody>
+                  </voice>
+                </speak>
+            `;
+        }
 
-        // 立即更新按鈕樣式和文本
-        selectAllTextButton.textContent = "取消朗讀";
-        selectAllTextButton.classList.remove('button-light');
-        selectAllTextButton.classList.add('button-danger');
+        const selectAllTextButton = document.getElementById('select-all-text');
+        let sentences = [];
+        let currentSentenceIndex = 0;
+        let isReading = false;
 
-        startReading(); // 直接開始朗讀
-    }
-});
+        selectAllTextButton.addEventListener('click', function() {
+            clearHighlights();
+            if (isReading) {
+                // 取消朗讀
+                cancelReading();
+            } else {
+                // 開始朗讀
+                const pdfContainer = document.getElementById('pdfContainer');
+                const textLayers = pdfContainer.getElementsByClassName('textLayer');
+                let fullText = '';
+
+                for (let textLayer of textLayers) {
+                    const spans = textLayer.getElementsByTagName('span');
+                    for (let span of spans) {
+                        fullText += span.textContent + ' ';
+                    }
+                }
+
+                const cleanedText = fullText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+                sentences = cleanedText.split(/(?<=[。！？])/); // 根據標點符號分句
+                currentSentenceIndex = 0;
+                isReading = true;
+
+                // 立即更新按鈕樣式和文本
+                selectAllTextButton.textContent = "取消朗讀";
+                selectAllTextButton.classList.remove('button-light');
+                selectAllTextButton.classList.add('button-danger');
+
+                startReading(); // 直接開始朗讀
+            }
+        });
 
 function cancelReading() {
   isReading = false;
