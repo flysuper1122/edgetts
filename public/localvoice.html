@@ -1447,12 +1447,19 @@ function updateRate(value) {
     document.getElementById('speedValue').innerHTML = displayValue;
 
     // 設置語音合成速率
-    let rate = 1 + (adjustedValue / 100*2); // 將速率範圍設置為 0.5 到 3
+    let rate = 1 + (adjustedValue / 100 * 2); // 計算語速
+
+    // 限制語速在合理範圍內（0.5 到 3）
+    rate = Math.max(0.5, Math.min(rate, 3)); // 確保 rate 在 0.5 到 3 之間
+
+    // 更新語速
     speechSynthesis.getVoices().forEach(voice => {
         let utterance = new SpeechSynthesisUtterance();
         utterance.voice = voice;
         utterance.rate = rate;
     });
+
+    console.log('當前語速:', rate); // 用於除錯
 }
 
 // 設置初始語速
