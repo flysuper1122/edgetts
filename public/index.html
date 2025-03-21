@@ -259,9 +259,19 @@ input[type=range]::-moz-range-thumb {
 
 
 <script>
-	function redirectToNewPage() {
-    window.location.href = 'localvoice.html';
+function redirectToNewPage() {
+    // 取得當前 URL 的參數
+    const params = new URLSearchParams(window.location.search);
+    const googlesheetid = params.get('googlesheetid');
+    const file = params.get('file');
+
+    // 構建新的 URL
+    const newUrl = `localvoice.html?googlesheetid=${googlesheetid}&file=${file}`;
+
+    // 重定向到新的 URL
+    window.location.href = newUrl;
 }
+
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
     const pdfFileInput = document.getElementById('pdfFileInput');
@@ -450,7 +460,7 @@ const clearIndexedDB = async (forceClear = false) => {
 };
 
 // 更新網址中的檔案名稱
-// 更新網址中的檔案名稱
+
 function updateUrl(fileName) {
     const newUrl = new URL(window.location.href);
     if (fileName) {
