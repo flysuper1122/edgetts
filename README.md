@@ -23,7 +23,8 @@
 
 ### 校內桌機PHP安裝版
 
-https://www.dfes.ntpc.edu.tw/p/404-1000-8135.php
+https://www.dfes.ntpc.edu.tw/p/404-1000-8135.php<br>
+這個有完整的管理介面。
 
 ### 瀏覽器內建發音靜態網頁
 
