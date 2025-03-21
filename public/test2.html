@@ -468,7 +468,7 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         if (showLoading) {
             // 顯示載入中提示
             Swal.fire({
-                title: '載入中請稍後',
+                title: '載入中請稍候',
                 text: '正在從雲端硬碟載入檔案...',
                 allowOutsideClick: false,
                 didOpen: () => {
@@ -509,11 +509,13 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         });
     } catch (error) {
         console.error('載入 Google 雲端硬碟 PDF 檔案失敗：', error);
-        Swal.fire({
-            icon: 'error',
-            title: '載入失敗',
-            text: '無法載入 PDF 檔案，請檢查檔案 ID 是否正確。',
-        });
+        if (showLoading) {
+            Swal.fire({
+                icon: 'error',
+                title: '載入失敗',
+                text: '無法載入 PDF 檔案，請檢查檔案 ID 是否正確。',
+            });
+        }
     }
 }
 // 當頁面載入時，檢查網址中的檔案名稱
