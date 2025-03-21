@@ -202,10 +202,6 @@ input[type=range]::-moz-range-thumb {
 </head>
 <body tabindex="0">
 	 <div class="container">
-<div id="progress-bar">
-    <div id="progress-bar-fill">0%</div>
-  </div>
-
 <div>
     <!-- 聲音選擇 -->  
     <select id="voiceSelect">
@@ -466,18 +462,20 @@ function updateUrl(fileName) {
     window.history.replaceState({}, '', newUrl);
 }
 // 從 Google 雲端硬碟載入 PDF 檔案
-async function loadPdfFromDrive(fileId) {
+async function loadPdfFromDrive(fileId, showLoading = true) {
     const url = `${gasUrl}?fileId=${fileId}`;
     try {
-        // 顯示載入中提示
-        Swal.fire({
-            title: '載入中請稍後',
-            text: '正在從雲端硬碟載入檔案...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+        if (showLoading) {
+            // 顯示載入中提示
+            Swal.fire({
+                title: '載入中請稍後',
+                text: '正在從雲端硬碟載入檔案...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
 
         const response = await fetch(url);
         if (!response.ok) {
@@ -498,7 +496,9 @@ async function loadPdfFromDrive(fileId) {
             pdfDoc = pdf;
             renderPage(currentPage);
             updateUrl(fileId); // 更新網址列
-            Swal.close(); // 關閉載入中提示
+            if (showLoading) {
+                Swal.close(); // 關閉載入中提示
+            }
         }).catch(error => {
             console.error('PDF 檔案載入失敗：', error);
             Swal.fire({
@@ -554,12 +554,12 @@ window.addEventListener('load', async () => {
                     }
                 } else {
                     // 如果 IndexedDB 中沒有檔案，從 Google 雲端硬碟載入
-                    await loadPdfFromDrive(fileParam);
+                    await loadPdfFromDrive(fileParam, false); // 不顯示載入中提示
                 }
             } catch (error) {
                 console.error('讀取檔案失敗：', error);
                 // 如果讀取失敗，從 Google 雲端硬碟載入
-                await loadPdfFromDrive(fileParam);
+                await loadPdfFromDrive(fileParam, false); // 不顯示載入中提示
             }
         }
     }
