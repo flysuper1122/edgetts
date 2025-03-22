@@ -486,7 +486,7 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         // 如果 showLoading 為 true 且 URL 不以 .pdf 結尾，則顯示載入動畫
         if (showLoading && !isPdfUrl) {
             Swal.fire({
-                title: '載入中請稍後',
+                title: '載入中請稍候',
                 text: '正在從雲端硬碟載入檔案...',
                 allowOutsideClick: false,
                 didOpen: () => {
