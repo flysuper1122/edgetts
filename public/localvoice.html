@@ -247,7 +247,12 @@ function redirectToNewPage() {
     const file = params.get('file');
 
     // 構建新的 URL
-    const newUrl = `https://edgetts-lovat.vercel.app/?googlesheetid=${googlesheetid}&file=${file}`;
+    let newUrl = `https://edgetts-lovat.vercel.app/?file=${file}`;
+
+    // 如果 googlesheetid 不是空值，添加到 URL
+    if (googlesheetid) {
+        newUrl += `&googlesheetid=${googlesheetid}`;
+    }
 
     // 重定向到新的 URL
     window.location.href = newUrl;
