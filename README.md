@@ -10,13 +10,14 @@
 
 ### 部署到 Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/flysupers-projects/import?s=https%3A%2F%2Fgithub.com%2Fflysuper1122%2Fedgetts&hasTrialAvailable=1&showOptionalTeamCreation=false&project-name=edgetts&framework=other&totalProjects=1&remainingProjects=1)<br>
-運行Demo網址：https://edgetts-lovat.vercel.app/ (本系統受限於Vercel次數限制，請自行部署於自己的Github+Vercel。)<br>
-1.本系統可以開啟本地PDF檔案，也可以網址後面加？googlesheetid=試算表id&file=雲端硬碟pdf 檔id，例：https://edgetts-lovat.vercel.app/?googlesheetid=1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc&file=17miE5mg1_GPlerNur0eg0BE_6Y3dC1tu<br>
-2.googlesheet和googledrive檔案要開放知道連結的使用者檢視權。<br>
-3.因為AI有些語詞發音錯誤，可用googlesheet過濾，試算表第一欄為原語詞，第二欄為替換語詞。<br>
-例:https://docs.google.com/spreadsheets/d/1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc/edit?usp=drive_link<br>
-4.雲端硬碟能以id開啟下載是使用GAS代理伺服器，為分散流量請自行部署，將edgetts/public/index.html內第338行換成自己的GAS網址。<br>
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/flysupers-projects/import?s=https%3A%2F%2Fgithub.com%2Fflysuper1122%2Fedgetts&hasTrialAvailable=1&showOptionalTeamCreation=false&project-name=edgetts&framework=other&totalProjects=1&remainingProjects=1)</p>
+運行Demo網址：https://edgetts-lovat.vercel.app/ (本系統受限於Vercel次數限制，請自行部署於自己的Github+Vercel。)</p>
+1.本系統可以開啟本地PDF檔案，也可以網址後面加？googlesheetid=試算表id&file=雲端硬碟pdf 檔id。<br>
+例：https://edgetts-lovat.vercel.app/?googlesheetid=1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc&file=17miE5mg1_GPlerNur0eg0BE_6Y3dC1tu</p>
+2.googlesheet和googledrive檔案要開放知道連結的使用者檢視權。</p>
+3.因為AI有些語詞發音錯誤，可用googlesheet過濾，試算表第一欄為原語詞，第二欄為替換語詞。</p>
+例:https://docs.google.com/spreadsheets/d/1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc/edit?usp=drive_link</p>
+4.雲端硬碟能以id開啟下載是使用GAS代理伺服器，為分散流量請自行部署，將edgetts/public/index.html內第338行換成自己的GAS網址。</p>
 代理伺服器原碼：https://script.google.com/home/projects/1xBf9RBw31tIQFqBuniN6Sm6-sOUitwNnjy2WVKf9fAWMzn5FkuZIWHW8/edit?pli=1
 ### 部署到 Heroku
 
