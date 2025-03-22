@@ -258,7 +258,6 @@ input[type=range]::-moz-range-thumb {
 <button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換載具語音</button>
 
 
-<script>
 function redirectToNewPage() {
     // 取得當前 URL 的參數
     const params = new URLSearchParams(window.location.search);
@@ -266,7 +265,12 @@ function redirectToNewPage() {
     const file = params.get('file');
 
     // 構建新的 URL
-    const newUrl = `https://www.dfes.ntpc.edu.tw/var/file/0/1000/mobilehomepage/8/localvoice.html?googlesheetid=${googlesheetid}&file=${file}`;
+    let newUrl = `https://www.dfes.ntpc.edu.tw/var/file/0/1000/mobilehomepage/8/localvoice.html?file=${file}`;
+
+    // 如果 googlesheetid 不是空值，添加到 URL
+    if (googlesheetid) {
+        newUrl += `&googlesheetid=${googlesheetid}`;
+    }
 
     // 重定向到新的 URL
     window.location.href = newUrl;
