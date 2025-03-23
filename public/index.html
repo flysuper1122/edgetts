@@ -269,11 +269,16 @@ function redirectToNewPage() {
     const file = params.get('file');
 
     // 構建新的 URL
-    let newUrl = `https://www.dfes.ntpc.edu.tw/var/file/0/1000/mobilehomepage/9/localvoice.html?file=${file}`;
+    let newUrl = 'https://www.dfes.ntpc.edu.tw/var/file/0/1000/mobilehomepage/9/localvoice.html';
+
+    // 如果 file 不是空值，添加到 URL
+    if (file) {
+        newUrl += `?file=${file}`;
+    }
 
     // 如果 googlesheetid 不是空值，添加到 URL
     if (googlesheetid) {
-        newUrl += `&googlesheetid=${googlesheetid}`;
+        newUrl += file ? `&googlesheetid=${googlesheetid}` : `?googlesheetid=${googlesheetid}`;
     }
 
     // 重定向到新的 URL
