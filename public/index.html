@@ -285,21 +285,13 @@ function notifyPageChange(page) {
     localStorage.setItem('currentPage', page);
 }
 
-// 新增 URL hash 更新函數
+//  更新URL hash (不觸發頁面刷新)
 function updateUrlHash(page) {
     const newUrl = new URL(window.location.href);
-    
-    // 保留原有的 file 參數
-    const fileParam = newUrl.searchParams.get('file');
-    
-    // 更新 hash
     newUrl.hash = `page=${page}`;
-    
-    // 使用 replaceState 避免新增歷史記錄
     window.history.replaceState({}, '', newUrl);
 }
-
-// 新增從 URL hash 讀取頁數的函數
+// 獲取當前頁數 (從URL hash或localStorage)
 function getPageFromHash() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
@@ -308,36 +300,25 @@ function getPageFromHash() {
     // 從 localStorage 讀取作為備用
     const pageFromStorage = localStorage.getItem('currentPage') ? parseInt(localStorage.getItem('currentPage')) : 1;
     
-    // 優先使用 hash 中的頁數
     return pageFromHash || pageFromStorage;
 }
-// 修改 redirectToNewPage 函數以保留頁數
+// 切換網路語音時保留當前檔案和頁數
 function redirectToNewPage() {
-    // 取得當前 URL 的參數
-    const params = new URLSearchParams(window.location.search);
-    const googlesheetid = params.get('googlesheetid');
-    const file = params.get('file');
+    const urlParams = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams();
+    
+    // 保留所有現有參數
+    if (urlParams.get('file')) params.set('file', urlParams.get('file'));
+    if (urlParams.get('googlesheetid')) params.set('googlesheetid', urlParams.get('googlesheetid'));
+    
+    // 構建新URL
+    let newUrl = 'localvoice (3).html';
+    if (params.toString()) newUrl += `?${params.toString()}`;
+    
+    // 保留當前頁數
     const currentPage = getPageFromHash();
-
-    // 構建新的 URL
-    let newUrl = 'https://www.dfes.ntpc.edu.tw/var/file/0/1000/mobilehomepage/9/localvoice.html';
-
-    // 如果 file 不是空值，添加到 URL
-    if (file) {
-        newUrl += `?file=${file}`;
-    }
-
-    // 如果 googlesheetid 不是空值，添加到 URL
-    if (googlesheetid) {
-        newUrl += file ? `&googlesheetid=${googlesheetid}` : `?googlesheetid=${googlesheetid}`;
-    }
-
-    // 添加當前頁數到 hash
-    if (currentPage > 1) {
-        newUrl += `#page=${currentPage}`;
-    }
-
-    // 重定向到新的 URL
+    if (currentPage > 1) newUrl += `#page=${currentPage}`;
+    
     window.location.href = newUrl;
 }
 // PDF.js 初始化
@@ -411,14 +392,14 @@ function renderPage(pageNum) {
 
         pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
         
-        // 更新 hash (但不觸發 hashchange 事件)
-        const currentHash = window.location.hash;
-        const newHash = `page=${pageNum}`;
-        if (currentHash !== newHash) {
-            const newUrl = new URL(window.location.href);
-            newUrl.hash = newHash;
-            window.history.replaceState({}, '', newUrl);
-        }
+         // 更新hash但不觸發hashchange
+    const currentHash = window.location.hash;
+    const newHash = `page=${pageNum}`;
+    if (currentHash !== newHash) {
+        const newUrl = new URL(window.location.href);
+        newUrl.hash = newHash;
+        window.history.replaceState({}, '', newUrl);
+    }
     });
 }
 
@@ -663,7 +644,7 @@ window.addEventListener('load', async () => {
     sessionStorage.setItem('previousUrl', currentUrl);
 });
 
-// 新增 hashchange 事件監聽
+//  監聽頁數變化事件
 window.addEventListener('hashchange', function() {
     const newPage = getPageFromHash();
     if (newPage !== currentPage && newPage >= 1 && newPage <= (pdfDoc?.numPages || 1)) {
@@ -671,6 +652,7 @@ window.addEventListener('hashchange', function() {
         renderPage(currentPage);
     }
 });
+
 // 當使用者選擇檔案時
 pdfFileInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
@@ -790,10 +772,9 @@ nextPageButton.addEventListener('click', () => {
         notifyPageChange(currentPage);
     }
 });
-// 添加 message 事件監聽用於跨窗口通信
+// 監聽跨網域消息
 window.addEventListener('message', function(event) {
-    // 安全性檢查 (實際應用中應檢查 event.origin)
-    if (event.data && event.data.type === 'pageChange' && event.data.source !== 'pdfViewer') {
+    if (event.data?.type === 'pageChange' && event.data.source !== 'pdfViewer') {
         const newPage = event.data.page;
         if (newPage !== currentPage && newPage >= 1 && newPage <= (pdfDoc?.numPages || 1)) {
             currentPage = newPage;
