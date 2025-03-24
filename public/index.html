@@ -261,29 +261,63 @@ input[type=range]::-moz-range-thumb {
 
 <button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換載具語音</button>
 <script>
-// 初始化 BroadcastChannel
-const channel = new BroadcastChannel('pdf-page-sync');
+// 移除 BroadcastChannel 相關代碼，替換為以下實現
 
-// 監聽來自其他頁面的消息
-channel.onmessage = (event) => {
-    if (event.data.type === 'pageChange') {
-        const newPage = event.data.page;
-        if (newPage !== currentPage) {
-            currentPage = newPage;
-            renderPage(currentPage);
-        }
-    }
-};
+// 頁數同步相關變量
+let pageSyncTimeout = null;
+const PAGE_SYNC_DELAY = 300; // 防抖延遲(毫秒)
 
-// 當頁數改變時，發送消息給其他頁面
+// 修改 notifyPageChange 函數
 function notifyPageChange(page) {
-    channel.postMessage({ type: 'pageChange', page: page });
+    // 更新 URL hash
+    updateUrlHash(page);
+    
+    // 如果是 iframe 內嵌的情況，通知父窗口
+    if (window !== window.top) {
+        window.parent.postMessage({
+            type: 'pageChange',
+            page: page,
+            source: 'pdfViewer'
+        }, '*'); // 注意: 實際應用中應指定具體域名而非 '*'
+    }
+    
+    // 更新 localStorage
+    localStorage.setItem('currentPage', page);
 }
+
+// 新增 URL hash 更新函數
+function updateUrlHash(page) {
+    const newUrl = new URL(window.location.href);
+    
+    // 保留原有的 file 參數
+    const fileParam = newUrl.searchParams.get('file');
+    
+    // 更新 hash
+    newUrl.hash = `page=${page}`;
+    
+    // 使用 replaceState 避免新增歷史記錄
+    window.history.replaceState({}, '', newUrl);
+}
+
+// 新增從 URL hash 讀取頁數的函數
+function getPageFromHash() {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const pageFromHash = params.get('page') ? parseInt(params.get('page')) : null;
+    
+    // 從 localStorage 讀取作為備用
+    const pageFromStorage = localStorage.getItem('currentPage') ? parseInt(localStorage.getItem('currentPage')) : 1;
+    
+    // 優先使用 hash 中的頁數
+    return pageFromHash || pageFromStorage;
+}
+// 修改 redirectToNewPage 函數以保留頁數
 function redirectToNewPage() {
     // 取得當前 URL 的參數
     const params = new URLSearchParams(window.location.search);
     const googlesheetid = params.get('googlesheetid');
     const file = params.get('file');
+    const currentPage = getPageFromHash();
 
     // 構建新的 URL
     let newUrl = 'localvoice.html';
@@ -298,31 +332,38 @@ function redirectToNewPage() {
         newUrl += file ? `&googlesheetid=${googlesheetid}` : `?googlesheetid=${googlesheetid}`;
     }
 
+    // 添加當前頁數到 hash
+    if (currentPage > 1) {
+        newUrl += `#page=${currentPage}`;
+    }
+
     // 重定向到新的 URL
     window.location.href = newUrl;
 }
-
+// PDF.js 初始化
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
-    const pdfFileInput = document.getElementById('pdfFileInput');
-    const pdfContainer = document.getElementById('pdfContainer');
-    const prevPageButton = document.getElementById('prevPage');
-    const nextPageButton = document.getElementById('nextPage');
-    const pageNumberSpan = document.getElementById('pageNumber');
+const pdfFileInput = document.getElementById('pdfFileInput');
+const pdfContainer = document.getElementById('pdfContainer');
+const prevPageButton = document.getElementById('prevPage');
+const nextPageButton = document.getElementById('nextPage');
+const pageNumberSpan = document.getElementById('pageNumber');
 
-    let pdfDoc = null;
-    let currentPage = 1;
-
-    function renderPage(pageNum) {
+let pdfDoc = null;
+let currentPage = 1;
+    // 修改 renderPage 函數
+function renderPage(pageNum) {
+    if (!pdfDoc) return;
+    
     pdfDoc.getPage(pageNum).then(page => {
-        const screenWidth = window.innerWidth; // 獲取螢幕寬度
-        const desiredWidth = screenWidth * 0.8; // 設置期望的寬度（例如螢幕寬度的90%）
+        const screenWidth = window.innerWidth;
+        const desiredWidth = screenWidth * 0.8;
         const viewport = page.getViewport({ scale: 1 });
-        const scale = desiredWidth / viewport.width; // 根據期望寬度計算縮放比例
+        const scale = desiredWidth / viewport.width;
 
         const scaledViewport = page.getViewport({ scale: scale });
 
-        pdfContainer.innerHTML = ''; // 清空之前的內容
+        pdfContainer.innerHTML = '';
 
         const pageContainer = document.createElement('div');
         pageContainer.className = 'pdf-page-container';
@@ -333,13 +374,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
         const pdfCanvas = document.createElement('canvas');
         const context = pdfCanvas.getContext('2d');
 
-        // 根據設備的 DPI 調整 Canvas 解析度
-        const dpi = window.devicePixelRatio || 1; // 獲取設備的 DPI
-        pdfCanvas.height = scaledViewport.height * dpi; // 設置 Canvas 高度
-        pdfCanvas.width = scaledViewport.width * dpi;  // 設置 Canvas 寬度
-        context.scale(dpi, dpi); // 調整 Canvas 的縮放比例
+        const dpi = window.devicePixelRatio || 1;
+        pdfCanvas.height = scaledViewport.height * dpi;
+        pdfCanvas.width = scaledViewport.width * dpi;
+        context.scale(dpi, dpi);
 
-        // 設置 Canvas 的顯示尺寸（CSS 尺寸）
         pdfCanvas.style.height = `${scaledViewport.height}px`;
         pdfCanvas.style.width = `${scaledViewport.width}px`;
 
@@ -370,10 +409,16 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
             textLayerDiv.style.top = '-4px';
         });
 
-            // 儲存當前頁數到 localStorage
-        localStorage.setItem('currentPage', pageNum);
         pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
-        notifyPageChange(pageNum); // 通知其他頁面
+        
+        // 更新 hash (但不觸發 hashchange 事件)
+        const currentHash = window.location.hash;
+        const newHash = `page=${pageNum}`;
+        if (currentHash !== newHash) {
+            const newUrl = new URL(window.location.href);
+            newUrl.hash = newHash;
+            window.history.replaceState({}, '', newUrl);
+        }
     });
 }
 
@@ -523,7 +568,13 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
     }
 }
 // 當頁面載入時，檢查網址中的檔案名稱
+
+// 修改頁面初始化部分
 window.addEventListener('load', async () => {
+    // 從 URL hash 或 localStorage 讀取初始頁數
+    currentPage = getPageFromHash();
+    
+    // 原有的初始化代碼...
     const urlParams = new URLSearchParams(window.location.search);
     const fileParam = urlParams.get('file');
     const previousUrl = sessionStorage.getItem('previousUrl');
@@ -551,13 +602,7 @@ window.addEventListener('load', async () => {
                         const typedarray = new Uint8Array(this.result);
                         pdfjsLib.getDocument(typedarray).promise.then(pdf => {
                             pdfDoc = pdf;
-                            
-                            // 從 localStorage 讀取儲存的頁數
-                            const savedPage = localStorage.getItem('currentPage');
-                            currentPage = savedPage ? parseInt(savedPage, 10) : 1;
-
                             renderPage(currentPage);
-                            notifyPageChange(currentPage);
                         }).catch(error => {
                             console.error('PDF 檔案載入失敗：', error);
                             alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
@@ -569,7 +614,6 @@ window.addEventListener('load', async () => {
                     };
                     fileReader.readAsArrayBuffer(file);
                 } else {
-                    // 如果 IndexedDB 中沒有匹配的檔案，清除 URL 參數
                     console.log('IndexedDB 中沒有匹配的本地檔案，清除 URL 參數');
                     updateUrl(null);
                 }
@@ -580,7 +624,6 @@ window.addEventListener('load', async () => {
         } else {
             // 處理 Google 雲端硬碟檔案
             try {
-                // 嘗試從 IndexedDB 讀取檔案
                 const file = await loadFileFromIndexedDB();
                 if (file) {
                     if (file.name === fileParam) {
@@ -590,13 +633,7 @@ window.addEventListener('load', async () => {
                             const typedarray = new Uint8Array(this.result);
                             pdfjsLib.getDocument(typedarray).promise.then(pdf => {
                                 pdfDoc = pdf;
-
-                                // 從 localStorage 讀取儲存的頁數
-                                const savedPage = localStorage.getItem('currentPage');
-                                currentPage = savedPage ? parseInt(savedPage, 10) : 1;
-
                                 renderPage(currentPage);
-                                notifyPageChange(currentPage);
                             }).catch(error => {
                                 console.error('PDF 檔案載入失敗：', error);
                                 alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
@@ -613,12 +650,10 @@ window.addEventListener('load', async () => {
                         updateUrl(file.name);
                     }
                 } else {
-                    // 如果 IndexedDB 中沒有檔案，從 Google 雲端硬碟載入
                     await loadPdfFromDrive(fileParam, !isPageRefresh);
                 }
             } catch (error) {
                 console.error('讀取檔案失敗：', error);
-                // 如果讀取失敗，從 Google 雲端硬碟載入
                 await loadPdfFromDrive(fileParam, !isPageRefresh);
             }
         }
@@ -628,6 +663,14 @@ window.addEventListener('load', async () => {
     sessionStorage.setItem('previousUrl', currentUrl);
 });
 
+// 新增 hashchange 事件監聽
+window.addEventListener('hashchange', function() {
+    const newPage = getPageFromHash();
+    if (newPage !== currentPage && newPage >= 1 && newPage <= (pdfDoc?.numPages || 1)) {
+        currentPage = newPage;
+        renderPage(currentPage);
+    }
+});
 // 當使用者選擇檔案時
 pdfFileInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
@@ -731,21 +774,35 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
     }
 }
 // 上一頁和下一頁按鈕的事件監聽
+// 修改上一頁/下一頁按鈕事件
 prevPageButton.addEventListener('click', () => {
     if (currentPage > 1) {
         currentPage--;
         renderPage(currentPage);
-        notifyPageChange(currentPage); // 通知其他頁面
+        notifyPageChange(currentPage);
     }
 });
 
 nextPageButton.addEventListener('click', () => {
-    if (currentPage < pdfDoc.numPages) {
+    if (pdfDoc && currentPage < pdfDoc.numPages) {
         currentPage++;
         renderPage(currentPage);
-        notifyPageChange(currentPage); // 通知其他頁面
+        notifyPageChange(currentPage);
     }
 });
+// 添加 message 事件監聽用於跨窗口通信
+window.addEventListener('message', function(event) {
+    // 安全性檢查 (實際應用中應檢查 event.origin)
+    if (event.data && event.data.type === 'pageChange' && event.data.source !== 'pdfViewer') {
+        const newPage = event.data.page;
+        if (newPage !== currentPage && newPage >= 1 && newPage <= (pdfDoc?.numPages || 1)) {
+            currentPage = newPage;
+            renderPage(currentPage);
+            updateUrlHash(currentPage);
+        }
+    }
+});
+
 
 // 從 URL 參數中讀取 PDF 檔案的 ID
 const urlParams = new URLSearchParams(window.location.search);
