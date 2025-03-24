@@ -268,11 +268,8 @@ function redirectToNewPage() {
     const googlesheetid = params.get('googlesheetid');
     const file = params.get('file');
 
-    // 取得當前頁數
-    const currentPage = localStorage.getItem('currentPage') || 1;
-
     // 構建新的 URL
-    let newUrl = 'https://edgetts-lovat.vercel.app/';
+    let newUrl = 'https://www.dfes.ntpc.edu.tw/var/file/0/1000/mobilehomepage/9/localvoice.html';
 
     // 如果 file 不是空值，添加到 URL
     if (file) {
@@ -284,12 +281,10 @@ function redirectToNewPage() {
         newUrl += file ? `&googlesheetid=${googlesheetid}` : `?googlesheetid=${googlesheetid}`;
     }
 
-    // 添加當前頁數到 URL
-    newUrl += file || googlesheetid ? `&page=${currentPage}` : `?page=${currentPage}`;
-
     // 重定向到新的 URL
     window.location.href = newUrl;
 }
+
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
     const pdfFileInput = document.getElementById('pdfFileInput');
@@ -499,16 +494,7 @@ window.addEventListener('load', async () => {
     const fileParam = urlParams.get('file');
     const previousUrl = sessionStorage.getItem('previousUrl');
     const currentUrl = window.location.href;
-   const pageParam = urlParams.get('page');
 
-    // 如果有頁數參數，跳轉到該頁
-    if (pageParam) {
-        const pageNum = parseInt(pageParam, 10);
-        if (!isNaN(pageNum) && pageNum > 0) {
-            currentPage = pageNum;
-            renderPage(currentPage);
-        }
-    }
     // 判斷是否為頁面重新整理
     const isPageRefresh = previousUrl === currentUrl;
 
