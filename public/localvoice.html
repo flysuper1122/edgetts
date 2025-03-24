@@ -243,6 +243,24 @@ input[type=range]::-moz-range-thumb {
 
 
 <script>
+// 初始化 BroadcastChannel
+const channel = new BroadcastChannel('pdf-page-sync');
+
+// 監聽來自其他頁面的消息
+channel.onmessage = (event) => {
+    if (event.data.type === 'pageChange') {
+        const newPage = event.data.page;
+        if (newPage !== currentPage) {
+            currentPage = newPage;
+            renderPage(currentPage);
+        }
+    }
+};
+
+// 當頁數改變時，發送消息給其他頁面
+function notifyPageChange(page) {
+    channel.postMessage({ type: 'pageChange', page: page });
+}
 function redirectToNewPage() {
     // 取得當前 URL 的參數
     const params = new URLSearchParams(window.location.search);
@@ -334,7 +352,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
             textLayerDiv.style.top = '-4px';
         });
 
+            // 儲存當前頁數到 localStorage
+        localStorage.setItem('currentPage', pageNum);
         pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
+        notifyPageChange(pageNum); // 通知其他頁面
     });
 }
 
@@ -409,7 +430,7 @@ const clearIndexedDB = async (forceClear = false) => {
 };
 
 // 更新網址中的檔案名稱
-// 更新網址中的檔案名稱
+
 function updateUrl(fileName) {
     const newUrl = new URL(window.location.href);
     if (fileName) {
@@ -511,7 +532,13 @@ window.addEventListener('load', async () => {
                             const typedarray = new Uint8Array(this.result);
                             pdfjsLib.getDocument(typedarray).promise.then(pdf => {
                                 pdfDoc = pdf;
+
+                                // 從 localStorage 讀取儲存的頁數
+                                const savedPage = localStorage.getItem('currentPage');
+                                currentPage = savedPage ? parseInt(savedPage, 10) : 1;
+
                                 renderPage(currentPage);
+                                notifyPageChange(currentPage); // 通知其他頁面
                             }).catch(error => {
                                 console.error('PDF 檔案載入失敗：', error);
                                 alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
@@ -580,12 +607,15 @@ prevPageButton.addEventListener('click', () => {
     if (currentPage > 1) {
         currentPage--;
         renderPage(currentPage);
+        notifyPageChange(currentPage); // 通知其他頁面
     }
 });
+
 nextPageButton.addEventListener('click', () => {
     if (currentPage < pdfDoc.numPages) {
         currentPage++;
         renderPage(currentPage);
+        notifyPageChange(currentPage); // 通知其他頁面
     }
 });
 
