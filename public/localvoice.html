@@ -281,53 +281,33 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 // Google Apps Script 代理 URL
 const gasUrl = 'https://script.google.com/macros/s/AKfycbyBsMfSK9C56I7jCwQ2iMEGofS4Ghehvj0biddjMEuJdZFbhSNl6S27BueSOYiSYFPKzg/exec'; // 替換為你的 GAS 部署 URL
 
-function renderPage(pageNum) {
-    pdfDoc.getPage(pageNum).then(page => {
-        const screenWidth = window.innerWidth;
-        const desiredWidth = screenWidth * 0.8;
-        const viewport = page.getViewport({ scale: 1 });
-        const scale = desiredWidth / viewport.width;
-        const scaledViewport = page.getViewport({ scale: scale });
-        pdfContainer.innerHTML = '';
-        const pageContainer = document.createElement('div');
-        pageContainer.className = 'pdf-page-container';
-        const pdfViewer = document.createElement('div');
-        pdfViewer.className = 'pdf-viewer';
-        const pdfCanvas = document.createElement('canvas');
-        const context = pdfCanvas.getContext('2d');
-        const dpi = window.devicePixelRatio || 1;
-        pdfCanvas.height = scaledViewport.height * dpi;
-        pdfCanvas.width = scaledViewport.width * dpi;
-        context.scale(dpi, dpi);
-        pdfCanvas.style.height = `${scaledViewport.height}px`;
-        pdfCanvas.style.width = `${scaledViewport.width}px`;
-        pdfViewer.style.height = scaledViewport.height + 'px';
-        pdfViewer.style.width = scaledViewport.width + 'px';
-        const textLayerDiv = document.createElement('div');
-        textLayerDiv.className = 'textLayer';
-        pageContainer.appendChild(pdfViewer);
-        pdfViewer.appendChild(pdfCanvas);
-        pdfViewer.appendChild(textLayerDiv);
-        pdfContainer.appendChild(pageContainer);
-        const renderContext = {
-            canvasContext: context,
-            viewport: scaledViewport
-        };
-        page.render(renderContext);
-        page.getTextContent().then(textContent => {
-            textLayerDiv.innerHTML = '';
-            pdfjsLib.renderTextLayer({
-                textContent: textContent,
-                container: textLayerDiv,
-                viewport: scaledViewport,
-            });
-            textLayerDiv.style.top = '-4px';
-        });
+function redirectToNewPage() {
+    // 取得當前 URL 的參數
+    const params = new URLSearchParams(window.location.search);
+    const googlesheetid = params.get('googlesheetid');
+    const file = params.get('file');
 
-        // 儲存當前頁數到 localStorage
-        localStorage.setItem('currentPage', pageNum);
-        pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
-    });
+    // 取得當前頁數
+    const currentPage = localStorage.getItem('currentPage') || 1;
+
+    // 構建新的 URL
+    let newUrl = 'https://edgetts-lovat.vercel.app/';
+
+    // 如果 file 不是空值，添加到 URL
+    if (file) {
+        newUrl += `?file=${file}`;
+    }
+
+    // 如果 googlesheetid 不是空值，添加到 URL
+    if (googlesheetid) {
+        newUrl += file ? `&googlesheetid=${googlesheetid}` : `?googlesheetid=${googlesheetid}`;
+    }
+
+    // 添加當前頁數到 URL
+    newUrl += file || googlesheetid ? `&page=${currentPage}` : `?page=${currentPage}`;
+
+    // 重定向到新的 URL
+    window.location.href = newUrl;
 }
 // 打開 IndexedDB 資料庫
 const openDB = () => {
@@ -475,7 +455,16 @@ window.addEventListener('load', async () => {
     const fileParam = urlParams.get('file');
     const previousUrl = sessionStorage.getItem('previousUrl');
     const currentUrl = window.location.href;
+    const pageParam = urlParams.get('page');
 
+    // 如果有頁數參數，跳轉到該頁
+    if (pageParam) {
+        const pageNum = parseInt(pageParam, 10);
+        if (!isNaN(pageNum) && pageNum > 0) {
+            currentPage = pageNum;
+            renderPage(currentPage);
+        }
+    }
     // 判斷是否為頁面重新整理
     const isPageRefresh = previousUrl === currentUrl;
 
