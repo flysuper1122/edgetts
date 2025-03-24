@@ -443,14 +443,16 @@ function updateUrl(fileName) {
 
 // 從 Google 雲端硬碟載入 PDF 檔案
 async function loadPdfFromDrive(fileId, showLoading = true) {
+    // 檢查是否是本地檔案名稱（包含 .pdf 結尾）
+    if (fileId && fileId.toLowerCase().endsWith('.pdf')) {
+        // 如果是本地檔案名稱，直接返回不處理
+        return;
+    }
+
     const url = `${gasUrl}?fileId=${fileId}`;
-
-    // 檢查 fileId 是否以 .pdf 結尾
-    const isPdfUrl = fileId && fileId.toLowerCase().endsWith('.pdf');
-
+    
     try {
-        // 如果 showLoading 為 true 且 URL 不以 .pdf 結尾，則顯示載入動畫
-        if (showLoading && !isPdfUrl) {
+        if (showLoading) {
             Swal.fire({
                 title: '載入中請稍候',
                 text: '正在從雲端硬碟載入檔案...',
@@ -479,9 +481,9 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         pdfjsLib.getDocument(typedarray).promise.then(pdf => {
             pdfDoc = pdf;
             renderPage(currentPage);
-            updateUrl(fileId); // 更新網址列
-            if (showLoading && !isPdfUrl) {
-                Swal.close(); // 關閉載入中提示
+            updateUrl(fileId);
+            if (showLoading) {
+                Swal.close();
             }
         }).catch(error => {
             console.error('PDF 檔案載入失敗：', error);
@@ -493,7 +495,7 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         });
     } catch (error) {
         console.error('載入 Google 雲端硬碟 PDF 檔案失敗：', error);
-        if (showLoading && !isPdfUrl) {
+        if (showLoading) {
             Swal.fire({
                 icon: 'error',
                 title: '載入失敗',
@@ -502,7 +504,6 @@ async function loadPdfFromDrive(fileId, showLoading = true) {
         }
     }
 }
-
 // 當頁面載入時，檢查網址中的檔案名稱
 window.addEventListener('load', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -513,14 +514,53 @@ window.addEventListener('load', async () => {
     // 判斷是否為頁面重新整理
     const isPageRefresh = previousUrl === currentUrl;
 
-    // 判斷 URL 是否以 .pdf 結尾
-    const isPdfUrl = fileParam && fileParam.toLowerCase().endsWith('.pdf');
+    // 判斷 URL 是否以 .pdf 結尾（本地檔案）
+    const isLocalPdfFile = fileParam && fileParam.toLowerCase().endsWith('.pdf');
 
     if (fileParam) {
         if (fileParam.startsWith('http://') || fileParam.startsWith('https://')) {
+            // 處理網路 PDF 檔案
             await clearIndexedDB();
             loadPdfFromUrl(fileParam);
+        } else if (isLocalPdfFile) {
+            // 處理本地 PDF 檔案
+            try {
+                const file = await loadFileFromIndexedDB();
+                if (file && file.name === fileParam) {
+                    console.log('當前檔案與 URL 中的本地檔案相同，從 IndexedDB 載入');
+                    const fileReader = new FileReader();
+                    fileReader.onload = function() {
+                        const typedarray = new Uint8Array(this.result);
+                        pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                            pdfDoc = pdf;
+                            
+                            // 從 localStorage 讀取儲存的頁數
+                            const savedPage = localStorage.getItem('currentPage');
+                            currentPage = savedPage ? parseInt(savedPage, 10) : 1;
+
+                            renderPage(currentPage);
+                            notifyPageChange(currentPage);
+                        }).catch(error => {
+                            console.error('PDF 檔案載入失敗：', error);
+                            alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
+                        });
+                    };
+                    fileReader.onerror = function() {
+                        console.error('檔案讀取失敗：', fileReader.error);
+                        alert('檔案讀取失敗，請重試。');
+                    };
+                    fileReader.readAsArrayBuffer(file);
+                } else {
+                    // 如果 IndexedDB 中沒有匹配的檔案，清除 URL 參數
+                    console.log('IndexedDB 中沒有匹配的本地檔案，清除 URL 參數');
+                    updateUrl(null);
+                }
+            } catch (error) {
+                console.error('讀取本地檔案失敗：', error);
+                updateUrl(null);
+            }
         } else {
+            // 處理 Google 雲端硬碟檔案
             try {
                 // 嘗試從 IndexedDB 讀取檔案
                 const file = await loadFileFromIndexedDB();
@@ -528,7 +568,7 @@ window.addEventListener('load', async () => {
                     if (file.name === fileParam) {
                         console.log('當前檔案與 URL 中的檔案相同，跳過重新載入。');
                         const fileReader = new FileReader();
-                        fileReader.onload = function () {
+                        fileReader.onload = function() {
                             const typedarray = new Uint8Array(this.result);
                             pdfjsLib.getDocument(typedarray).promise.then(pdf => {
                                 pdfDoc = pdf;
@@ -538,13 +578,13 @@ window.addEventListener('load', async () => {
                                 currentPage = savedPage ? parseInt(savedPage, 10) : 1;
 
                                 renderPage(currentPage);
-                                notifyPageChange(currentPage); // 通知其他頁面
+                                notifyPageChange(currentPage);
                             }).catch(error => {
                                 console.error('PDF 檔案載入失敗：', error);
                                 alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
                             });
                         };
-                        fileReader.onerror = function () {
+                        fileReader.onerror = function() {
                             console.error('檔案讀取失敗：', fileReader.error);
                             alert('檔案讀取失敗，請重試。');
                         };
@@ -556,12 +596,12 @@ window.addEventListener('load', async () => {
                     }
                 } else {
                     // 如果 IndexedDB 中沒有檔案，從 Google 雲端硬碟載入
-                    await loadPdfFromDrive(fileParam, !isPageRefresh && !isPdfUrl); // 如果不是頁面重新整理且 URL 不以 .pdf 結尾，則顯示載入中提示
+                    await loadPdfFromDrive(fileParam, !isPageRefresh);
                 }
             } catch (error) {
                 console.error('讀取檔案失敗：', error);
                 // 如果讀取失敗，從 Google 雲端硬碟載入
-                await loadPdfFromDrive(fileParam, !isPageRefresh && !isPdfUrl); // 如果不是頁面重新整理且 URL 不以 .pdf 結尾，則顯示載入中提示
+                await loadPdfFromDrive(fileParam, !isPageRefresh);
             }
         }
     }
@@ -569,6 +609,7 @@ window.addEventListener('load', async () => {
     // 更新 sessionStorage 中的 previousUrl
     sessionStorage.setItem('previousUrl', currentUrl);
 });
+
 // 當使用者選擇檔案時
 pdfFileInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
@@ -576,19 +617,25 @@ pdfFileInput.addEventListener('change', async (event) => {
         try {
             await clearIndexedDB(true);
             await saveFileToIndexedDB(file);
-            updateUrl(file.name);
+            
+            // 更新 URL 參數，標記為本地檔案
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('file', file.name);
+            window.history.replaceState({}, '', newUrl);
+            
             const fileReader = new FileReader();
-            fileReader.onload = function () {
+            fileReader.onload = function() {
                 const typedarray = new Uint8Array(this.result);
                 pdfjsLib.getDocument(typedarray).promise.then(pdf => {
                     pdfDoc = pdf;
+                    currentPage = 1; // 重置為第一頁
                     renderPage(currentPage);
                 }).catch(error => {
                     console.error('PDF 檔案載入失敗：', error);
                     alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
                 });
             };
-            fileReader.onerror = function () {
+            fileReader.onerror = function() {
                 console.error('檔案讀取失敗：', fileReader.error);
                 alert('檔案讀取失敗，請重試。');
             };
@@ -602,6 +649,69 @@ pdfFileInput.addEventListener('change', async (event) => {
     }
 });
 
+// 修改 loadPdfFromDrive 函數，增加對本地檔案的檢查
+async function loadPdfFromDrive(fileId, showLoading = true) {
+    // 檢查是否是本地檔案名稱（包含 .pdf 結尾）
+    if (fileId && fileId.toLowerCase().endsWith('.pdf')) {
+        console.log('檢測到本地檔案名稱，跳過 Google 雲端硬碟載入');
+        return;
+    }
+
+    const url = `${gasUrl}?fileId=${fileId}`;
+    
+    try {
+        if (showLoading) {
+            Swal.fire({
+                title: '載入中請稍候',
+                text: '正在從雲端硬碟載入檔案...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch file');
+        }
+        const data = await response.json();
+        const fileContent = atob(data.fileContent);
+        const arrayBuffer = new ArrayBuffer(fileContent.length);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < fileContent.length; i++) {
+            uint8Array[i] = fileContent.charCodeAt(i);
+        }
+        const blob = new Blob([uint8Array], { type: 'application/pdf' });
+        const file = new File([blob], data.fileName, { type: 'application/pdf' });
+        await saveFileToIndexedDB(file);
+        const typedarray = new Uint8Array(arrayBuffer);
+        pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+            pdfDoc = pdf;
+            renderPage(currentPage);
+            updateUrl(fileId);
+            if (showLoading) {
+                Swal.close();
+            }
+        }).catch(error => {
+            console.error('PDF 檔案載入失敗：', error);
+            Swal.fire({
+                icon: 'error',
+                title: '載入失敗',
+                text: '無法載入 PDF 檔案，請檢查檔案是否正確。',
+            });
+        });
+    } catch (error) {
+        console.error('載入 Google 雲端硬碟 PDF 檔案失敗：', error);
+        if (showLoading) {
+            Swal.fire({
+                icon: 'error',
+                title: '載入失敗',
+                text: '無法載入 PDF 檔案，請檢查檔案 ID 是否正確。',
+            });
+        }
+    }
+}
 // 上一頁和下一頁按鈕的事件監聽
 prevPageButton.addEventListener('click', () => {
     if (currentPage > 1) {
