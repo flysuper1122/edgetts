@@ -261,24 +261,7 @@ input[type=range]::-moz-range-thumb {
 
 <button  class="button button-light" style="writing-mode: vertical-rl; text-orientation: upright;z-index: 2000;position: fixed; bottom: 5px;left: 0%; z-index: 1100;color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;" onclick="redirectToNewPage()">切換載具語音</button>
 <script>
-// 初始化 BroadcastChannel
-const channel = new BroadcastChannel('pdf-page-sync');
 
-// 監聽來自其他頁面的消息
-channel.onmessage = (event) => {
-    if (event.data.type === 'pageChange') {
-        const newPage = event.data.page;
-        if (newPage !== currentPage) {
-            currentPage = newPage;
-            renderPage(currentPage);
-        }
-    }
-};
-
-// 當頁數改變時，發送消息給其他頁面
-function notifyPageChange(page) {
-    channel.postMessage({ type: 'pageChange', page: page });
-}
 function redirectToNewPage() {
     // 取得當前 URL 的參數
     const params = new URLSearchParams(window.location.search);
@@ -363,7 +346,6 @@ function renderPage(pageNum) {
         // 儲存當前頁數到 localStorage
         localStorage.setItem('currentPage', pageNum);
         pageNumberSpan.textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
-        notifyPageChange(pageNum); // 通知其他頁面
     });
 }
 // 打開 IndexedDB 資料庫
@@ -541,7 +523,6 @@ window.addEventListener('load', async () => {
                                 currentPage = savedPage ? parseInt(savedPage, 10) : 1;
 
                                 renderPage(currentPage);
-                                notifyPageChange(currentPage); // 通知其他頁面
                             }).catch(error => {
                                 console.error('PDF 檔案載入失敗：', error);
                                 alert('無法載入 PDF 檔案，請檢查檔案是否正確。');
@@ -610,7 +591,6 @@ prevPageButton.addEventListener('click', () => {
     if (currentPage > 1) {
         currentPage--;
         renderPage(currentPage);
-        notifyPageChange(currentPage); // 通知其他頁面
     }
 });
 
@@ -618,10 +598,9 @@ nextPageButton.addEventListener('click', () => {
     if (currentPage < pdfDoc.numPages) {
         currentPage++;
         renderPage(currentPage);
-        notifyPageChange(currentPage); // 通知其他頁面
     }
 });
-	
+
 // 從 URL 參數中讀取 PDF 檔案的 ID
 const urlParams = new URLSearchParams(window.location.search);
 const fileId = urlParams.get('file');
