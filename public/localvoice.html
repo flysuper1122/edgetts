@@ -1593,18 +1593,15 @@ function showPage(page_no) {
 
    // 更新語速顯示
 
+
 function updateRate(value) {
     let adjustedValue = value;
-    let directionText = adjustedValue > 0 ? '語速加' : '語速減';
-    let percentValue = Math.abs(adjustedValue) + '%';
-    let selectedRate = adjustedValue + '%';
-    document.getElementById('speedValue').innerHTML = `
-        <span style="writing-mode: vertical-lr; display: inline-block;">${directionText}</span>
-        <span style="writing-mode: horizontal-tb; display: inline-block;">${percentValue}</span>
-    `;
+    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '語速加'+'<br>' : '語速減'+ '<br>') + Math.abs(adjustedValue) + '%';
+    selectedRate = adjustedValue + '%';
+    document.getElementById('speedValue').innerHTML = displayValue;
 
     // 設置語音合成速率
-    let rate = 1 + (adjustedValue / 100 * 2);
+    let rate = 1 + (adjustedValue / 100*2); // 將速率範圍設置為 0.5 到 3
     speechSynthesis.getVoices().forEach(voice => {
         let utterance = new SpeechSynthesisUtterance();
         utterance.voice = voice;
