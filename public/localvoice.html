@@ -1597,7 +1597,7 @@ function updateRate(value) {
     let adjustedValue = value;
     let directionText = adjustedValue > 0 ? '語速加' : '語速減';
     let percentValue = Math.abs(adjustedValue) + '%';
-    
+    let selectedRate = adjustedValue + '%';
     document.getElementById('speedValue').innerHTML = `
         <span style="writing-mode: vertical-lr; display: inline-block;">${directionText}</span>
         <span style="writing-mode: horizontal-tb; display: inline-block;">${percentValue}</span>
