@@ -220,7 +220,14 @@ input[type=range]::-moz-range-thumb {
 
  <!-- 語速調整 -->
  <div id="verticalDiv">	     
- <label for="speakSpeed" style="writing-mode: vertical-lr; display: flex; align-items: center; justify-content: center; height: 200px; position: fixed; top: 50px; right: 5px; color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;"><span id="speedValue" style="position: fixed; top: 120px; writing-mode: horizontal-tb;right: 0px;">0%</span></label>
+html
+复制
+<label for="speakSpeed" style="writing-mode: vertical-lr; display: flex; align-items: center; justify-content: center; height: 200px; position: fixed; top: 50px; right: 5px; color:black;font-size:16px;font-weight:bold;color: rgb(134, 101, 224);font-size: 20px;text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px;">
+  <span id="speedValue" style="position: fixed; top: 120px; right: 0px;">
+    <span style="writing-mode: vertical-lr;">語速減</span>
+    <span style="writing-mode: horizontal-tb;">30%</span>
+  </span>
+</label>
       <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)" style="  width:20%;  padding: 10px;  margin-bottom: 20px; z-index:1000;right:15px;position: fixed;">
     </div>
     
@@ -1590,12 +1597,16 @@ function showPage(page_no) {
 
 function updateRate(value) {
     let adjustedValue = value;
-    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '語速加'+'<br>' : '語速減'+ '<br>') + Math.abs(adjustedValue) + '%';
-    selectedRate = adjustedValue + '%';
-    document.getElementById('speedValue').innerHTML = displayValue;
+    let directionText = adjustedValue > 0 ? '語速加' : '語速減';
+    let percentValue = Math.abs(adjustedValue) + '%';
+    
+    document.getElementById('speedValue').innerHTML = `
+        <span style="writing-mode: vertical-lr; display: inline-block;">${directionText}</span>
+        <span style="writing-mode: horizontal-tb; display: inline-block;">${percentValue}</span>
+    `;
 
     // 設置語音合成速率
-    let rate = 1 + (adjustedValue / 100*2); // 將速率範圍設置為 0.5 到 3
+    let rate = 1 + (adjustedValue / 100 * 2);
     speechSynthesis.getVoices().forEach(voice => {
         let utterance = new SpeechSynthesisUtterance();
         utterance.voice = voice;
