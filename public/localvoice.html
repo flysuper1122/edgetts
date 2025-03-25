@@ -300,7 +300,7 @@ function redirectToNewPage() {
     if (urlParams.get('googlesheetid')) params.set('googlesheetid', urlParams.get('googlesheetid'));
     
     // 構建新URL
-    let newUrl = 'https://edgetts-lovat.vercel.app/';
+    let newUrl = 'index.html';
     if (params.toString()) newUrl += `?${params.toString()}`;
     
     // 保留當前頁數
