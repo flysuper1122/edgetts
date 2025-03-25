@@ -226,7 +226,8 @@ input[type=range]::-moz-range-thumb {
 		  <!-- 語速調整 -->
  <div id="verticalDiv">	     
       <label for="speakSpeed" style="writing-mode: vertical-lr; position: fixed; top: 50px; right: 5px; color: rgb(134, 101, 224); font-size: 20px; font-weight: bold; text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px; height: 200px; display: flex; align-items: center;">
-    <span id="speedValue">0%</span>
+    <span id="speedLabel">語速加</span>
+    <span id="speedPercent" style="writing-mode: horizontal-tb; margin-left: 5px;">0%</span>
 </label>
       <input type="range" id="speakSpeed" name="rate" min="-50" max="50" value="-30" oninput="updateRate(this.value)" style="  width:20%;  padding: 10px;  margin-bottom: 20px; z-index:1000;right:15px;position: fixed;">
     </div>
@@ -1538,10 +1539,20 @@ function showPage(page_no) {
 
      // 更新語速顯示
 function updateRate(value) {
-    let adjustedValue = value;
-    let displayText = adjustedValue === 0 ? '0%' : 
-                     (adjustedValue > 0 ? '語速加\n' : '語速減\n') + Math.abs(adjustedValue) + '%';
-    document.getElementById('speedValue').textContent = displayText;
+    const adjustedValue = value;
+    const speedLabel = document.getElementById('speedLabel');
+    const speedPercent = document.getElementById('speedPercent');
+    
+    if (adjustedValue === 0) {
+        speedLabel.textContent = '';
+        speedPercent.textContent = '0%';
+    } else if (adjustedValue > 0) {
+        speedLabel.textContent = '語速加';
+        speedPercent.textContent = Math.abs(adjustedValue) + '%';
+    } else {
+        speedLabel.textContent = '語速減';
+        speedPercent.textContent = Math.abs(adjustedValue) + '%';
+    }
 }
 
 // 設置初始語速
