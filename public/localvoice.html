@@ -1611,7 +1611,7 @@ function showPage(page_no) {
 function updateRate(value) {
     let adjustedValue = value;
    let displayValue = adjustedValue === 0 ? '0%' : 
-    `<span class="vertical-text">${adjustedValue > 0 ? '語速加' : '語速減'}</span>` +
+    `<span class="vertical-text">${adjustedValue > 0 ? '語速加' : '語速減'}</span><br>` +
     `<span class="horizontal-text">${Math.abs(adjustedValue)}%</span>`;
     selectedRate = adjustedValue + '%';
     document.getElementById('speedValue').innerHTML = displayValue;
