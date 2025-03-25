@@ -315,7 +315,7 @@ function redirectToNewPage() {
     if (urlParams.get('googlesheetid')) params.set('googlesheetid', urlParams.get('googlesheetid'));
     
     // 構建新URL
-    let newUrl = 'https://www.dfes.ntpc.edu.tw/var/file/0/1000/mobilehomepage/9/localvoice.html';
+    let newUrl = 'localvoice.html';
     if (params.toString()) newUrl += `?${params.toString()}`;
     
     // 保留當前頁數
