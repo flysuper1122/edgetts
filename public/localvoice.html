@@ -199,6 +199,20 @@ input[type=range]::-moz-range-thumb {
             transform-origin: right center; /* 設置旋轉中心 */
 
         }
+	#speedValue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vertical-text {
+  writing-mode: vertical-lr; /* 直書 */
+  margin-bottom: 5px; /* 調整間距 */
+}
+
+.horizontal-text {
+  writing-mode: horizontal-tb; /* 橫排 */
+}
     </style>
 	  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
@@ -1596,7 +1610,9 @@ function showPage(page_no) {
 
 function updateRate(value) {
     let adjustedValue = value;
-    let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '語速加'+'<br>' : '語速減'+ '<br>') + Math.abs(adjustedValue) + '%';
+   let displayValue = adjustedValue === 0 ? '0%' : 
+    `<span class="vertical-text">${adjustedValue > 0 ? '語速加' : '語速減'}</span>` +
+    `<span class="horizontal-text">${Math.abs(adjustedValue)}%</span>`;
     selectedRate = adjustedValue + '%';
     document.getElementById('speedValue').innerHTML = displayValue;
 
