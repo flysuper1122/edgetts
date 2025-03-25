@@ -1590,6 +1590,7 @@ function showPage(page_no) {
 
 
    // 更新語速顯示
+
 function updateRate(value) {
     let adjustedValue = value;
     let displayValue = adjustedValue === 0 ? '0%' : (adjustedValue > 0 ? '語速加'+'<br>' : '語速減'+ '<br>') + Math.abs(adjustedValue) + '%';
