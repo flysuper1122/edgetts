@@ -1130,14 +1130,14 @@ style.innerHTML = `
     background-color: transparent;
     border-radius: 15px; /* Adjust the value to change the roundness */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */   
-    z-index: 1000;
+    z-index: 2000;
 }
  .resize-button {
     position: absolute;
     width: 0;
     height: 0;
     cursor: pointer;
-    z-index: 10;   
+    z-index: 2000;   
   } 
   #resize-bottom {
     width: 80px;
@@ -1150,7 +1150,8 @@ style.innerHTML = `
     justify-content: center;
     align-items: center;
     color: white; /* Text color */
-    font-size: 36px; /* Text size */   
+    font-size: 36px; /* Text size */
+    z-index: 2000;
   }
   #resize-right {
     width: 50px;
@@ -1164,7 +1165,8 @@ style.innerHTML = `
     align-items: center;
     color: white; /* Text color */
     font-size: 36px; /* Text size */
-    white-space: pre-wrap; /* Allow text to wrap */   
+    white-space: pre-wrap; /* Allow text to wrap */ 
+    z-index: 2000;
   }
   #read-button {
     position: absolute;
@@ -1173,7 +1175,7 @@ style.innerHTML = `
     color: blue;
     border: none;
     cursor: pointer;
-    z-index: 10;
+    z-index: 2000;
     width: 90px;
     height: 40px;
     font-size:15px;
