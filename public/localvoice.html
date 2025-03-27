@@ -1130,7 +1130,7 @@ style.innerHTML = `
     background-color: transparent;
     border-radius: 15px; /* Adjust the value to change the roundness */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */   
-    z-index: 10000;
+    z-index: 1000;
 }
  .resize-button {
     position: absolute;
@@ -1312,13 +1312,16 @@ async function readTextInsideFrame() {
   if (!hasText && pdfCanvas) {
     try {
       // 顯示載入提示
-      Swal.fire({
-        title: '文字辨識中',
-        text: '正在處理圖片中的文字...',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
+Swal.fire({
+    title: '正在識別文字',
+    text: '正在處理圖片中的文字內容...',
+    allowOutsideClick: false,
+    didOpen: () => {
+        Swal.showLoading();
+        // 直接設置 z-index
+        const popup = Swal.getPopup();
+        popup.style.zIndex = '999999';
+    }
       });
 
       // 裁剪canvas區域
