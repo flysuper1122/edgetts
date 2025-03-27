@@ -407,7 +407,7 @@ function renderPage(pageNum) {
 }
 
 // Google Apps Script 代理 URL
-const gasUrl = 'https://script.google.com/macros/s/AKfycbyBsMfSK9C56I7jCwQ2iMEGofS4Ghehvj0biddjMEuJdZFbhSNl6S27BueSOYiSYFPKzg/exec'; // 替換為你的 GAS 部署 URL
+const gasUrl = 'https://script.google.com/macros/s/AKfycbzgetLOedi_HzMnCmVuOeREpYXKVbAyFzlsPXCdvnE4XcwTNgcfhdnXeSwH7NYjH4Nvyw/exec'; // 替換為你的 GAS 部署 URL
 
 
 // 打開 IndexedDB 資料庫
@@ -842,51 +842,53 @@ if (fileId) {
             return text;
         }
 
-        async function sendTextToTTS(selectedText, callback) {
-            
+ async function sendTextToTTS(selectedText, callback) {
+    const cleanedText = selectedText.replace(/\s+/g, '');
+    let filteredText = cleanedText; // Initialize with cleanedText as fallback
+    
+    const sheetId = getSheetIdFromUrl();
+    if (sheetId) {
+        const data = await fetchSheetData(sheetId);
+        filteredText = replaceTextWithSheetData(cleanedText, data);
+    }
+    
+    console.log("送出給 TTS 的文本:", filteredText);
+    // 獲取選擇的聲音和語速
+    const voiceName = document.getElementById("voiceSelect").value;
+    const ratePercent = parseFloat(document.getElementById('speakSpeed').value); // 使用百分比
 
-            const sheetId = getSheetIdFromUrl();
-            if (sheetId) {
-                const data = await fetchSheetData(sheetId);
-                selectedText = replaceTextWithSheetData(selectedText, data);
-            }
-console.log("送出給 TTS 的文本:", selectedText);
-            // 獲取選擇的聲音和語速
-            const voiceName = document.getElementById("voiceSelect").value;
-            const ratePercent = parseFloat(document.getElementById('speakSpeed').value); // 使用百分比
+    // 生成 SSML
+    const ssml = createSSML(filteredText, voiceName, ratePercent);
 
-            // 生成 SSML
-            const ssml = createSSML(selectedText, voiceName, ratePercent);
-
-            // 發送請求到 TTS API
-            fetch('/api/ra', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain',
-                    'Format': 'audio-24khz-96kbitrate-mono-mp3',
-                },
-                body: ssml,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`請求失敗：${response.statusText}`);
-                }
-                return response.blob();
-            })
-            .then(audioBlob => {
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audioPlayer = document.getElementById('audioPlayer');
-                audioPlayer.src = audioUrl;
-                audioPlayer.play(); // 自動播放
-
-                // 設置音頻播放完成後的回調
-                audioPlayer.onended = callback;
-            })
-            .catch(error => {
-                console.error('發生錯誤：', error);
-                alert('無法播放語音，請檢查網絡連接或稍後重試。');
-            });
+    // 發送請求到 TTS API
+    fetch('/api/ra', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain',
+            'Format': 'audio-24khz-96kbitrate-mono-mp3',
+        },
+        body: ssml,
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`請求失敗：${response.statusText}`);
         }
+        return response.blob();
+    })
+    .then(audioBlob => {
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.src = audioUrl;
+        audioPlayer.play(); // 自動播放
+
+        // 設置音頻播放完成後的回調
+        audioPlayer.onended = callback;
+    })
+    .catch(error => {
+        console.error('發生錯誤：', error);
+        alert('無法播放語音，請檢查網絡連接或稍後重試。');
+    });
+}
 
         function createSSML(text, voiceName, ratePercent) {
             return `
@@ -1067,7 +1069,7 @@ style.innerHTML = `
     background-color: transparent;
     border-radius: 15px; /* Adjust the value to change the roundness */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */   
-    z-index: 10000;
+    z-index: 1000;
 }
  .resize-button {
     position: absolute;
@@ -1222,56 +1224,154 @@ readButton.addEventListener('click', readTextInsideFrame);
 updateButtonPositions();
  
 
-function readTextInsideFrame() {
-window.speechSynthesis.cancel(); // 取消所有正在進行的朗讀
+async function readTextInsideFrame() {
+  // 取消所有正在進行的語音朗讀
+  window.speechSynthesis.cancel();
+  
+  // 獲取框選區域和PDF查看器的位置信息
   const frameRect = frame.getBoundingClientRect();
   const viewerContainer = document.getElementById('viewerContainer');
   const textLayerDivs = viewerContainer.getElementsByClassName('textLayer');
+  const pdfCanvas = viewerContainer.querySelector('canvas');
 
-  // Clear previous highlights
+  // 清除之前的高亮標記
   for (let textLayer of textLayerDivs) {
     const spans = textLayer.getElementsByTagName('my-fra');
     for (let span of spans) {
-      span.style.backgroundColor = ''; // Clear previous highlight
+      span.style.backgroundColor = '';
     }
   }
 
   let textInsideFrame = '';
+  let hasText = false;
 
+  // 第一步：嘗試從文字層提取文字
   for (let textLayer of textLayerDivs) {
     const spans = textLayer.getElementsByTagName('my-fra');
     for (let span of spans) {
       const spanRect = span.getBoundingClientRect();
-      if (
-        spanRect.top >= frameRect.top &&
-        spanRect.bottom <= frameRect.bottom &&
-        spanRect.left >= frameRect.left &&
-        spanRect.right <= frameRect.right
-      ) {
-        span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)'; // More transparent yellow
-        textInsideFrame += span.textContent + '';
+      if (isInsideFrame(spanRect, frameRect)) {
+        // 標記選中的文字區域
+        span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)';
+        textInsideFrame += span.textContent + ' ';
+        hasText = true;
       }
     }
   }
- const cleanedText = textInsideFrame
-  .trim()
-  .replace(/[\r\n]+/g, ' ') // 將換行符替換為單個空格
-  .replace(/\s{2,}/g, ' ')  // 將連續的多個空白字符替換為單個空格
-  .trim();
-   
-  sendTextToTTS(cleanedText, function() {
-    // 框選朗讀結束後的回調
-    isReading = false;
-    selectAllTextButton.textContent = "整頁朗讀";
-    selectAllTextButton.classList.remove('button-danger');
-    selectAllTextButton.classList.add('button-light');
-  });
-  selectAllTextButton.textContent = "取消朗讀";
-  selectAllTextButton.classList.remove('button-light');
-  selectAllTextButton.classList.add('button-danger'); 
-  isReading = true;
+
+  // 第二步：如果沒有找到文字，嘗試使用OCR識別
+  if (!hasText && pdfCanvas) {
+    try {
+      // 顯示載入提示框
+      Swal.fire({
+    title: '正在識別文字',
+    text: '正在處理圖片中的文字內容...',
+    allowOutsideClick: false,
+    didOpen: () => {
+        Swal.showLoading();
+        // 直接修改 style
+        const popup = Swal.getPopup();
+        popup.style.zIndex = '999999';
+    }
+
+      });
+
+      // 裁剪選定區域的畫布
+      const croppedCanvas = cropCanvas(pdfCanvas, frameRect);
+      
+      // 使用Tesseract進行OCR識別
+      const { data: { text } } = await Tesseract.recognize(
+        croppedCanvas,
+        'chi_tra+chi_sim', // 使用繁體中文+簡體中文模型
+        {
+          logger: m => console.log(m),
+          tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.,!?()%+-=/:;', // 限制識別字符集
+          preserve_interword_spaces: '1', // 保留單詞間空格
+          tessedit_pageseg_mode: '10' // 使用稀疏文字識別模式
+        }
+      );
+      
+      textInsideFrame = text;
+      // 關閉提示框
+      Swal.close();
+    } catch (error) {
+      console.error('OCR識別失敗:', error);
+      Swal.fire({
+        icon: 'error',
+        title: '識別失敗', 
+        text: '無法識別圖片中的文字內容'
+      });
+      return;
+    }
+  }
+
+  // 清理識別出的文字內容
+  const cleanedText = textInsideFrame
+    .trim()
+    .replace(/[\r\n]+/g, ' ') // 替換換行符
+    .replace(/\s{2,}/g, ' ')  // 合併多餘空格
+    .trim();
+  
+  // 如果有識別到文字，則進行語音朗讀
+  if (cleanedText) {
+    sendTextToTTS(cleanedText, function() {
+      // 朗讀結束後的回調函數
+      isReading = false;
+      selectAllTextButton.textContent = "整頁朗讀";
+      selectAllTextButton.classList.remove('button-danger');
+      selectAllTextButton.classList.add('button-light');
+    });
+    
+    // 更新按鈕狀態
+    selectAllTextButton.textContent = "取消朗讀";
+    selectAllTextButton.classList.remove('button-light');
+    selectAllTextButton.classList.add('button-danger'); 
+    isReading = true;
+  } else {
+    // 沒有找到任何文字時的提示
+    Swal.fire({
+      icon: 'warning',
+      title: '未發現文字',
+      text: '在選定區域內沒有找到可識別的文字內容'
+    });
+  }
 }
 
+// 輔助函數：判斷元素是否在框選區域內
+function isInsideFrame(elementRect, frameRect) {
+  return (
+    elementRect.top >= frameRect.top &&
+    elementRect.bottom <= frameRect.bottom &&
+    elementRect.left >= frameRect.left &&
+    elementRect.right <= frameRect.right
+  );
+}
+
+// 輔助函數：裁剪Canvas區域
+function cropCanvas(sourceCanvas, cropRect) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // 考慮設備像素比進行精確裁剪
+  const dpr = window.devicePixelRatio || 1;
+  const cropX = (cropRect.left - sourceCanvas.getBoundingClientRect().left) * dpr;
+  const cropY = (cropRect.top - sourceCanvas.getBoundingClientRect().top) * dpr;
+  const cropWidth = cropRect.width * dpr;
+  const cropHeight = cropRect.height * dpr;
+  
+  // 設置新Canvas尺寸
+  canvas.width = cropWidth;
+  canvas.height = cropHeight;
+  
+  // 執行裁剪操作
+  ctx.drawImage(
+    sourceCanvas,
+    cropX, cropY, cropWidth, cropHeight,
+    0, 0, cropWidth, cropHeight
+  );
+  
+  return canvas;
+}
   let lastTouchElement = null;
 
  function wrapTextInFraTags() {
@@ -1560,5 +1660,6 @@ document.getElementById('speakSpeed').value = -30;
 updateRate(-30);
         
 </script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@latest/dist/tesseract.min.js"></script>
 </body>
 </html>
