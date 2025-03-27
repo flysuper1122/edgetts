@@ -881,33 +881,36 @@ audioPlayer = document.getElementById('audio-player');
             return text;
         }
 
-        function sendTextToTTS(selectedText, callback) {
-            const sheetId = getSheetIdFromUrl();
-            if (sheetId) {
-                fetchSheetData(sheetId, (sheetData) => {
-                    const filteredText = replaceTextUsingSheetData(selectedText, sheetData);
-                    console.log("送出給 TTS 的文本:", filteredText);
+       function sendTextToTTS(selectedText, callback) {
+    // 簡單去除所有空白字符（包括空格、換行、製表符等）
+    const cleanedText = selectedText.replace(/\s+/g, '');
+    
+    const sheetId = getSheetIdFromUrl();
+    if (sheetId) {
+        fetchSheetData(sheetId, (sheetData) => {
+            const filteredText = replaceTextUsingSheetData(cleanedText, sheetData);
+            console.log("送出給 TTS 的文本:", filteredText);
 
-                    const voiceName = selectedVoice;
-                    const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
-                    const ratePercent = parseFloat(selectedRate);
+            const voiceName = selectedVoice;
+            const voiceLang = selectedVoice === '1' ? 'zh-TW' : 'en-US';
+            const ratePercent = parseFloat(selectedRate);
 
-                    setTimeout(() => {
-                        speakText(filteredText, voiceName, voiceLang, ratePercent, callback);
-                    }, 100);
-                });
-            } else {
-                console.log("送出給 TTS 的文本:", selectedText);
+            setTimeout(() => {
+                speakText(filteredText, voiceName, voiceLang, ratePercent, callback);
+            }, 100);
+        });
+    } else {
+        console.log("送出給 TTS 的文本:", cleanedText);
 
-                const voiceName = selectedVoice;
-                const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
-                const ratePercent = parseFloat(selectedRate);
+        const voiceName = selectedVoice;
+        const voiceLang = selectedVoice === '1' ? 'zh-TW' : 'en-US';
+        const ratePercent = parseFloat(selectedRate);
 
-                setTimeout(() => {
-                    speakText(selectedText, voiceName, voiceLang, ratePercent, callback);
-                }, 100);
-            }
-        }
+        setTimeout(() => {
+            speakText(cleanedText, voiceName, voiceLang, ratePercent, callback);
+        }, 100);
+    }
+}
 
         function sendAllTextToTTS(selectedText, callback) {
             const sheetId = getSheetIdFromUrl();
@@ -917,7 +920,7 @@ audioPlayer = document.getElementById('audio-player');
                     console.log("送出給 TTS 的文本:", filteredText);
 
                     const voiceName = selectedVoice;
-                    const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
+                    const voiceLang = selectedVoice === '1' ? 'zh-TW' : 'en-US';
                     const ratePercent = parseFloat(selectedRate);
 
                     setTimeout(() => {
@@ -928,7 +931,7 @@ audioPlayer = document.getElementById('audio-player');
                 console.log("送出給 TTS 的文本:", selectedText);
 
                 const voiceName = selectedVoice;
-                const voiceLang = selectedVoice === '1' ? 'zh-CN' : 'en-US';
+                const voiceLang = selectedVoice === '1' ? 'zh-TW' : 'en-US';
                 const ratePercent = parseFloat(selectedRate);
 
                 setTimeout(() => {
@@ -1281,56 +1284,137 @@ readButton.addEventListener('click', readTextInsideFrame);
 updateButtonPositions();
  
 
-function readTextInsideFrame() {
-window.speechSynthesis.cancel(); // 取消所有正在進行的朗讀
+async function readTextInsideFrame() {
+  window.speechSynthesis.cancel();
   const frameRect = frame.getBoundingClientRect();
   const viewerContainer = document.getElementById('viewerContainer');
+  const pdfCanvas = viewerContainer.querySelector('canvas');
+  
+  // 檢查是否有文字層
   const textLayerDivs = viewerContainer.getElementsByClassName('textLayer');
-
-  // Clear previous highlights
-  for (let textLayer of textLayerDivs) {
-    const spans = textLayer.getElementsByTagName('my-fra');
-    for (let span of spans) {
-      span.style.backgroundColor = ''; // Clear previous highlight
-    }
-  }
-
+  let hasText = false;
   let textInsideFrame = '';
 
+  // 先嘗試從文字層獲取文字
   for (let textLayer of textLayerDivs) {
     const spans = textLayer.getElementsByTagName('my-fra');
     for (let span of spans) {
       const spanRect = span.getBoundingClientRect();
-      if (
-        spanRect.top >= frameRect.top &&
-        spanRect.bottom <= frameRect.bottom &&
-        spanRect.left >= frameRect.left &&
-        spanRect.right <= frameRect.right
-      ) {
-        span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)'; // More transparent yellow
+      if (isInsideFrame(spanRect, frameRect)) {
+        span.style.backgroundColor = 'rgba(255, 255, 0, 0.2)';
         textInsideFrame += span.textContent + '';
+        hasText = true;
       }
     }
   }
- const cleanedText = textInsideFrame
-  .trim()
-  .replace(/[\r\n]+/g, ' ') // 將換行符替換為單個空格
-  .replace(/\s{2,}/g, ' ')  // 將連續的多個空白字符替換為單個空格
-  .trim();
+
+  // 如果沒有找到文字，嘗試OCR
+  if (!hasText && pdfCanvas) {
+    try {
+      // 顯示載入提示
+      Swal.fire({
+        title: '文字辨識中',
+        text: '正在處理圖片中的文字...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // 裁剪canvas區域
+      const croppedCanvas = cropCanvas(pdfCanvas, frameRect);
+      
+      // 使用Tesseract進行OCR - 修改後的代碼
+ const { data: { text } } = await Tesseract.recognize(
+  croppedCanvas,
+  'chi_tra+chi_sim+eng',
+  {
+    logger: m => {
+      // 確保 m 是字串才檢查開頭
+      if (typeof m === 'string' && !m.startsWith('Warning: Parameter not found')) {
+        console.log(m);
+      }
+      // 如果是物件，直接記錄
+      else if (typeof m === 'object') {
+        console.log(m);
+      }
+    }
+  }
+);
+      
+      textInsideFrame = text;
+      Swal.close();
+    } catch (error) {
+      console.error('OCR失敗:', error);
+      Swal.fire({
+        icon: 'error',
+        title: '辨識失敗', 
+        text: '無法辨識圖片中的文字'
+      });
+      return;
+    }
+  }
+
+  const cleanedText = textInsideFrame.trim()
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
    
-  sendTextToTTS(cleanedText, function() {
-    // 框選朗讀結束後的回調
-    isReading = false;
-    selectAllTextButton.textContent = "整頁朗讀";
-    selectAllTextButton.classList.remove('button-danger');
-    selectAllTextButton.classList.add('button-light');
-  });
-  selectAllTextButton.textContent = "取消朗讀";
-  selectAllTextButton.classList.remove('button-light');
-  selectAllTextButton.classList.add('button-danger'); 
-  isReading = true;
+  if (cleanedText) {
+    sendTextToTTS(cleanedText, function() {
+      isReading = false;
+      selectAllTextButton.textContent = "整頁朗讀";
+      selectAllTextButton.classList.remove('button-danger');
+      selectAllTextButton.classList.add('button-light');
+    });
+    selectAllTextButton.textContent = "取消朗讀";
+    selectAllTextButton.classList.remove('button-light');
+    selectAllTextButton.classList.add('button-danger'); 
+    isReading = true;
+  } else {
+    Swal.fire({
+      icon: 'warning',
+      title: '沒有文字',
+      text: '框選區域中未找到可讀文字'
+    });
+  }
 }
 
+// 輔助函數：檢查元素是否在框內
+function isInsideFrame(elementRect, frameRect) {
+  return (
+    elementRect.top >= frameRect.top &&
+    elementRect.bottom <= frameRect.bottom &&
+    elementRect.left >= frameRect.left &&
+    elementRect.right <= frameRect.right
+  );
+}
+
+// 輔助函數：裁剪canvas區域
+function cropCanvas(sourceCanvas, cropRect) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // 計算裁剪區域（考慮設備像素比）
+  const dpr = window.devicePixelRatio || 1;
+  const cropX = (cropRect.left - sourceCanvas.getBoundingClientRect().left) * dpr;
+  const cropY = (cropRect.top - sourceCanvas.getBoundingClientRect().top) * dpr;
+  const cropWidth = cropRect.width * dpr;
+  const cropHeight = cropRect.height * dpr;
+  
+  // 設置新canvas大小
+  canvas.width = cropWidth;
+  canvas.height = cropHeight;
+  
+  // 裁剪並繪製到新canvas
+  ctx.drawImage(
+    sourceCanvas,
+    cropX, cropY, cropWidth, cropHeight,
+    0, 0, cropWidth, cropHeight
+  );
+  
+  return canvas;
+}
   let lastTouchElement = null;
 
  function wrapTextInFraTags() {
@@ -1618,5 +1702,10 @@ updateRate(-30);
 
         
 </script>
+<!-- 在head部分添加Tesseract.js -->
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@latest/dist/tesseract.min.js"></script>
+
+
 </body>
 </html>
