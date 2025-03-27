@@ -9,6 +9,7 @@
 報讀系統僅讀取非圖檔格式之PDF，請参考下列部署方式。
 
 ### 部署到 Vercel
+<iframe width="560" height="315" src="https://www.youtube.com/embed/h-Rr_x-fEHk?si=RXXQgq-V-PyUjqZ4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/flysupers-projects/import?s=https%3A%2F%2Fgithub.com%2Fflysuper1122%2Fedgetts&hasTrialAvailable=1&showOptionalTeamCreation=false&project-name=edgetts&framework=other&totalProjects=1&remainingProjects=1)</p>
 運行Demo網址： https://edgetts-lovat.vercel.app/ (本系統受限於Vercel次數限制，請自行部署於自己的Github+Vercel。)</p>
