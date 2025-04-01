@@ -21,6 +21,8 @@
 例: https://docs.google.com/spreadsheets/d/1LX0cOdhO7dI_9zYBTs3MVKz5qEAF4LwDege0OHzghyc/edit?usp=drive_link </p>
 4.雲端硬碟id支援是使用GAS代理伺服器，為分散流量請自行部屬，將edgetts/public/index.html內第410行及public/localvoice.html 內第395行換成自己的GAS網址。</p>
 代理伺服器源碼： https://script.google.com/home/projects/1xBf9RBw31tIQFqBuniN6Sm6-sOUitwNnjy2WVKf9fAWMzn5FkuZIWHW8/edit?pli=1
+5.如果想自動讀取雲端硬碟檔案形成公告用檔案列表可至 https://script.google.com/d/1j9yP29FGPiBKRXhmG_a5zy_mQwEtnL4wfFrFW3-Mlv96diUtsvprQ7BW/edit?usp=drive_link 複製GAS原始碼，修改參數部署後可供使用。
+
 ### 部署到 Heroku
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
